@@ -31,9 +31,6 @@ def construct_note(
         'modelName': model,
         'fields': extract_fields(row, field_names),
         'tags': [],
-        'options': {
-            'allowDuplicate': True,
-        }
     }
 
 
@@ -58,6 +55,10 @@ def import_csv_to_anki(filename: str):
         'params': {'notes': notes}
     }
     response = requests.post('http://localhost:8765', json=payload)
+    json_response = response.json()
+    if error := json_response.get('error'):
+        print("AnkiConnect error:", error)
+
     return response.status_code
 
 
