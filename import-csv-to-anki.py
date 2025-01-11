@@ -73,9 +73,8 @@ def make_anki_request(action: str, *, params: dict | None = None) -> Response:
 
 
 if __name__ == "__main__":
-    print("Hi")
     if len(sys.argv) != 2:
-        print("Usage: python import-csv-to-anki.py <csv_file_path>")
+        print('Usage: python import-csv-to-anki.py <csv_file_path>')
         sys.exit(1)
 
     filename = sys.argv[1]
