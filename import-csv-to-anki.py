@@ -2,8 +2,12 @@ import csv
 import sys
 
 import requests
+from requests import Response
 
 from decks import DECKS
+
+
+ANKI_CONNECT_URL = 'http://localhost:8765'
 
 
 def get_deck_data(filename: str) -> tuple[str, list[str], str]:
@@ -49,17 +53,23 @@ def extract_notes(
 def import_csv_to_anki(filename: str):
     deck_name, field_names, model_name = get_deck_data(filename)
     notes = extract_notes(filename, deck_name, field_names, model_name)
+    response = make_anki_request('addNotes', params={'notes': notes})
+    return response.status_code
+
+
+def make_anki_request(action: str, *, params: dict | None = None) -> Response:
+    """Send a request to AnkiConnect."""
     payload = {
-        'action': 'addNotes',
+        'action': action,
         'version': 6,
-        'params': {'notes': notes}
+        'params': params or {}
     }
-    response = requests.post('http://localhost:8765', json=payload)
+    response = requests.post(ANKI_CONNECT_URL, json=payload).json()
     json_response = response.json()
     if error := json_response.get('error'):
-        print("AnkiConnect error:", error)
+        raise Exception(f'AnkiConnect Error: {error}')
 
-    return response.status_code
+    return response
 
 
 if __name__ == "__main__":
