@@ -53,10 +53,9 @@ def download_sheet(sheet_name: str):
     write_to_csv(values, filename)
     print(f'Sheet "{sheet_name}" saved as "{filename}"')
 
-
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print('Usage: python download-sheet.py <sheet_name>')
+        print('Usage: python download_sheet.py <sheet_name>')
         sys.exit(1)
 
     sheet_name = sys.argv[1]

@@ -14,7 +14,7 @@ def get_model_id(model_name):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print('Usage: python get-model-id.py <model_name>')
+        print('Usage: python get_model_id.py <model_name>')
         sys.exit(1)
 
     model_name = sys.argv[1]
