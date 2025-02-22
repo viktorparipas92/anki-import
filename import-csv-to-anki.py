@@ -25,7 +25,7 @@ def get_deck_data(filename: str) -> tuple[str, list[str], str, str]:
 
 
 def extract_fields(row: dict, field_names: list[str]) -> dict:
-    return {name: row[name] for name in field_names}
+    return {name: row[name] or '' for name in field_names}
 
 
 def construct_note(
