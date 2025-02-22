@@ -36,7 +36,7 @@ def write_to_csv(values: list, filename: str):
         writer.writerows(values)
 
 
-def download_sheet(sheet_name: str):
+def download_sheet(sheet_name: str) -> str | None:
     assert settings.SERVICE_ACCOUNT_FILE, 'SERVICE_ACCOUNT_FILE is not set'
     assert settings.SPREADSHEET_ID, 'SPREADSHEET_ID is not set'
     credentials = Credentials.from_service_account_file(
@@ -52,6 +52,8 @@ def download_sheet(sheet_name: str):
     filename = f'{spreadsheet_title} - {sheet_name}.csv'
     write_to_csv(values, filename)
     print(f'Sheet "{sheet_name}" saved as "{filename}"')
+    return filename
+
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
