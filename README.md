@@ -59,5 +59,3 @@ sudo vi /etc/ssh/sshd_config
 ```bash
 ssh <USERNAME>@<NAS_IP_ADDRESS> -p <PORT>
 ```
-
-### Add 
