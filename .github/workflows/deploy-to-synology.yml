@@ -1,0 +1,50 @@
+name: Deploy to Synology NAS
+
+on:
+  push:
+    branches:
+      - main  # Trigger the workflow on push to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Deploy to Synology NAS
+      env:
+        CONTAINER_NAME: "python-container" 
+        IMAGE_NAME: "python:3.9-slim"
+        WORKDIR: "/volume1/docker/import-to-anki"
+      run: |
+        ssh ${{ secrets.NAS_USERNAME }}@${{ secrets.NAS_HOST }} -p ${{ secrets.NAS_SSH_PORT }} << 'EOF'
+          # Ensure the WORKDIR exists, create it if it doesn't
+          if [ ! -d "${{ env.WORKDIR }}" ]; then
+            sudo mkdir -p ${{ env.WORKDIR }}
+            sudo chown ${{ secrets.NAS_USERNAME }}:{{ secrets.NAS_USERNAME }} ${{ env.WORKDIR }}
+          fi
+          
+          cd ${{ env.WORKDIR }}
+          
+          # Pull the pre-existing Python image from Docker Hub
+          sudo docker pull ${{ env.IMAGE_NAME }}
+          
+          # Stop and remove the old container (if any)
+          if [ "$(sudo docker ps -aq -f name=${{ env.CONTAINER_NAME }})" ]; then
+            sudo docker stop ${{ env.CONTAINER_NAME }}
+            sudo docker rm ${{ env.CONTAINER_NAME }}
+          fi
+          
+          # Run the container with the Python image and mount the current working directory
+          sudo docker run -d --name ${{ env.CONTAINER_NAME }} -v ${{ env.WORKDIR }}:/app ${{ env.IMAGE_NAME }}
+          
+          # Install Python dependencies inside the container
+          sudo docker exec ${{ env.CONTAINER_NAME }} pip install -r /app/requirements.txt
+        EOF
