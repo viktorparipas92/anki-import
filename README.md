@@ -23,4 +23,9 @@ Install the dependencies from the requirements file:
 pip install -r requirements.txt
 ```
 
+# How to run the script
+```bash
+python download_and_import.py <Mixed|FRA|ESP|ITA> <sheet_name>
+```
+
 
