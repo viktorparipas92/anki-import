@@ -35,15 +35,11 @@ python download_and_import.py <Mixed|FRA|ESP|ITA> <sheet_name>
 - This enables SSHing into the NAS using password authentication.
 
 ### Add the public key to the server
-- On the local machine, display the public key.
 ```bash
-cat ~/.ssh/id_rsa.pub
+ssh-copy-id -p <PORT> -i ~/.ssh/id_rsa.pub <USERNAME>@<HOST>
 ```
-- Copy it to the clipboard.
-- On the server, add the key to the authorized keys file.
+- Set up file permissions
 ```bash
-sudo vi /var/services/homes/<USERNAME>/.ssh/authorized_keys
-# Paste the public key and save the file
 chmod 700 /var/services/homes/<USERNAME>/.ssh
 sudo chown viktor-nas-admin:users /var/services/homes/<USERNAME>/.ssh/authorized_keys
 chmod 600 /var/services/homes/<USERNAME>/.ssh/authorized_keys
