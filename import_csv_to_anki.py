@@ -78,6 +78,7 @@ def import_csv_to_anki(filename: str):
     print('Updating existing notes...')
     notes_to_add = []
     num_notes_updated: int = 0
+    updated_notes: list[str] = []
     for note in notes_to_import:
         unique_value = note['fields'][unique_field]
         if unique_value in existing_notes:
@@ -86,10 +87,11 @@ def import_csv_to_anki(filename: str):
                 note['id'] = existing_note['noteId']
                 make_anki_request('updateNoteFields', params={'note': note})
                 num_notes_updated += 1
+                updated_notes.append(unique_value)
         else:
             notes_to_add.append(note)
 
-    print(f'{num_notes_updated} notes updated')
+    print(f'{num_notes_updated} notes updated: {updated_notes}')
 
     print(f'{len(notes_to_add)} notes to add')
     if notes_to_add:
