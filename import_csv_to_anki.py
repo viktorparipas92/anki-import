@@ -124,23 +124,23 @@ def fetch_existing_notes(deck_name: str, unique_field: str) -> dict[str, dict]:
     if not existing_note_ids:
         existing_notes = {}
         print('No existing notes found in the deck.')
-    else:
-        notes_info_params = {'notes': existing_note_ids}
-        response = make_anki_request('notesInfo', params=notes_info_params)
-        existing_notes_info = response.json()['result']
+        return existing_notes
 
-        existing_notes_info = [
-            _extract_note_data_from_info(note_info)
-            for note_info in existing_notes_info
-        ]
+    notes_info_params = {'notes': existing_note_ids}
+    response = make_anki_request('notesInfo', params=notes_info_params)
+    existing_notes_info = response.json()['result']
 
-        # Key the notes by the unique field value to make it easier to look up
-        existing_notes = {
-            note['fields'][unique_field]: note
-            for note in existing_notes_info
-        }
-        print(f'Found {len(existing_notes)} existing notes.')
+    existing_notes_info = [
+        _extract_note_data_from_info(note_info)
+        for note_info in existing_notes_info
+    ]
 
+    # Key the notes by the unique field value to make it easier to look up
+    existing_notes = {
+        note['fields'][unique_field]: note
+        for note in existing_notes_info
+    }
+    print(f'Found {len(existing_notes)} existing notes.')
     return existing_notes
 
 
