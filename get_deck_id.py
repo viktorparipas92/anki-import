@@ -2,13 +2,15 @@ import sys
 
 import requests
 
+from settings import ANKI_CONNECT_URL
+
 
 def get_deck_id(deck_name):
     payload = {
         'action': 'deckNamesAndIds',
         'version': 6
     }
-    response = requests.post('http://localhost:8765', json=payload).json()
+    response = requests.post(ANKI_CONNECT_URL, json=payload).json()
     return response['result'].get(deck_name)
 
 

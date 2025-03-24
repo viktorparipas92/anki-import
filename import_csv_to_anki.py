@@ -1,14 +1,11 @@
 import csv
 import sys
-from operator import itemgetter
 
 import requests
 from requests import Response
 
 from decks import DECKS
-
-
-ANKI_CONNECT_URL = 'http://localhost:8765'
+from settings import ANKI_CONNECT_URL
 
 
 def get_deck_data(filename: str) -> tuple[str, list[str], str, str]:

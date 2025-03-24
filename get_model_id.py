@@ -2,13 +2,15 @@ import sys
 
 import requests
 
+from import_csv_to_anki import ANKI_CONNECT_URL
+
 
 def get_model_id(model_name):
     payload = {
         'action': 'modelNamesAndIds',
         'version': 6
     }
-    response = requests.post('http://localhost:8765', json=payload).json()
+    response = requests.post(ANKI_CONNECT_URL, json=payload).json()
     return response['result'].get(model_name)
 
 
