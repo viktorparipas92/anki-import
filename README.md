@@ -3,7 +3,7 @@
 - Open Anki.
 - Go to **Tools** > **Add-ons** > **Get Add-ons**.
 - Enter the code `2055492159` and click **OK**.
-- Restart Anki.
+- Restart Anki. 
 
 ## Google credentials
 - Ensure that an API key is generated so you can use the Google Spreadsheet API.
