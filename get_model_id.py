@@ -2,7 +2,7 @@ import sys
 
 import requests
 
-from import_csv_to_anki import ANKI_CONNECT_URL
+from settings import ANKI_CONNECT_URL
 
 
 def get_model_id(model_name):
