@@ -60,7 +60,7 @@ def download_sheet(spreadsheet_key: str, sheet_name: str) -> str | None:
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print('Usage: python download_sheet.py <Mixed|ITA|ESP|FRA> <sheet_name>')
+        print('Usage: python download_sheet.py <Mixed|ITA|ESP|FRA|SWE> <sheet_name>')
         sys.exit(1)
 
     spreadsheet_key = sys.argv[1]

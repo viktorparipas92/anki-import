@@ -7,7 +7,9 @@ from import_csv_to_anki import import_csv_to_anki
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print('Usage: python download_and_import.py <Mixed|ITA|ESP|FRA> <sheet_name>')
+        print(
+            'Usage: python download_and_import.py <Mixed|ITA|ESP|FRA|SWE> <sheet_name>'
+        )
         sys.exit(1)
 
     spreadsheet_key = sys.argv[1]

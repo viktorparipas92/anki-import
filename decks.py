@@ -12,6 +12,11 @@ DECKS = {
         'unique_field': 'Origin',
         'model_name': 'Italian',
     },
+    'Words learned - SWE.csv': {
+        'field_names': ['Origin', 'Article', 'Usage', 'English'],
+        'unique_field': 'Origin',
+        'model_name': 'Swedish',
+    }
 }
 
 for deck_filename, deck_data in DECKS.items():

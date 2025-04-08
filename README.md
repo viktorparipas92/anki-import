@@ -12,6 +12,7 @@
 
 ## Spreadsheets
 - The script is designed to work with a single Google Spreadsheet with multiple tabs.
+- The column names in the spreadsheet must match the field names of the specified model.
 - The ID of the spreadsheet must be added to `settings.py` as `SPREADSHEET_ID`. You can find the ID in the URL of the spreadsheet.
 
 ## Decks and models
