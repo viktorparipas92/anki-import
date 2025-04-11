@@ -14,6 +14,7 @@
 - The script is designed to work with a single Google Spreadsheet with multiple tabs.
 - The column names in the spreadsheet must match the field names of the specified model.
 - The ID of the spreadsheet must be added to `settings.py` as `SPREADSHEET_ID`. You can find the ID in the URL of the spreadsheet.
+- The spreadsheet needs to be shared with the service account.
 
 ## Decks and models
 The decks and models specified in `decks.py` must be present in Anki.

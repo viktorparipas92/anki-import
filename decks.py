@@ -16,12 +16,34 @@ DECKS = {
         'field_names': ['Origin', 'Article', 'Usage', 'English'],
         'unique_field': 'Origin',
         'model_name': 'Swedish',
-    }
+    },
+    'Words learned - FRA.csv': {
+        'field_names': ['Origin', 'Article', 'Usage', 'English'],
+        'unique_field': 'Origin',
+        'model_name': 'French',
+    },
+    'French vocabulary - Export.csv': {
+        'field_names': [
+            'French',
+            'Preposition',
+            'Word type',
+            'Familiarity',
+            'Word subtype',
+            'English',
+            'Pronunciation',
+        ],
+        'unique_field': 'French',
+        'model_name': 'French vocab',
+    },
 }
 
 for deck_filename, deck_data in DECKS.items():
     # The deck name is the same as the filename without the extension.
     deck_name = deck_filename.split('.')[0]
+    if deck_name.endswith('Export'):
+        # Remove the ' - Export' suffix
+        deck_name = deck_name[:-9]
+
     deck_data.update({
         'deck_name': deck_name,
         'deck_id': get_deck_id(deck_name),

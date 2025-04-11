@@ -63,11 +63,14 @@ def check_for_duplicates(notes: list[dict], unique_field: str) -> list[dict]:
     return unique_notes
 
 
-def import_csv_to_anki(filename: str):
+def import_csv_to_anki(filename: str, deck_name: str | None = None):
     """
     Perform a bulk import of notes into Anki, updating existing notes or adding new ones.
     """
-    deck_name, field_names, model_name, unique_field = get_deck_data(filename)
+    deck_name_from_data, field_names, model_name, unique_field = get_deck_data(filename)
+    deck_name = (
+        f'{deck_name_from_data}::{deck_name}' if deck_name else deck_name_from_data
+    )
     notes_to_import = extract_notes(filename, deck_name, field_names, model_name)
     notes_to_import = check_for_duplicates(notes_to_import, unique_field)
     existing_notes = fetch_existing_notes(deck_name, unique_field)
