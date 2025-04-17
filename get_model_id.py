@@ -20,5 +20,5 @@ if __name__ == '__main__':
         sys.exit(1)
 
     model_name = sys.argv[1]
-    deck_id = get_model_id(model_name)
-    print(deck_id)
+    model_id = get_model_id(model_name)
+    print(model_id)
