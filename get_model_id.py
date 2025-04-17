@@ -1,16 +1,10 @@
 import sys
 
-import requests
-
-from settings import ANKI_CONNECT_URL
+from anki_requests import make_anki_request
 
 
 def get_model_id(model_name):
-    payload = {
-        'action': 'modelNamesAndIds',
-        'version': 6
-    }
-    response = requests.post(ANKI_CONNECT_URL, json=payload).json()
+    response = make_anki_request('modelNamesAndIds')
     return response['result'].get(model_name)
 
 

@@ -1,11 +1,8 @@
 import csv
 import sys
 
-import requests
-from requests import Response
-
+from anki_requests import make_anki_request
 from decks import DECKS
-from settings import ANKI_CONNECT_URL
 
 
 def get_deck_data(filename: str) -> tuple[str, list[str], str, str]:
@@ -107,26 +104,11 @@ def import_csv_to_anki(filename: str, deck_name: str | None = None):
     print('Import completed.')
 
 
-def make_anki_request(action: str, *, params: dict | None = None) -> Response:
-    """Send a request to AnkiConnect."""
-    payload = {
-        'action': action,
-        'version': 6,
-        'params': params or {}
-    }
-    response = requests.post(ANKI_CONNECT_URL, json=payload)
-    json_response = response.json()
-    if error := json_response.get('error'):
-        raise Exception(f'AnkiConnect Error: {error}')
-
-    return response
-
-
 def fetch_existing_notes(deck_name: str, unique_field: str) -> dict[str, dict]:
     print('Fetching existing notes...')
     find_notes_params = {'query': f'deck:"{deck_name}"'}
     response = make_anki_request('findNotes', params=find_notes_params)
-    existing_note_ids = response.json()['result']
+    existing_note_ids = response['result']
     if not existing_note_ids:
         existing_notes = {}
         print('No existing notes found in the deck.')
@@ -134,7 +116,7 @@ def fetch_existing_notes(deck_name: str, unique_field: str) -> dict[str, dict]:
 
     notes_info_params = {'notes': existing_note_ids}
     response = make_anki_request('notesInfo', params=notes_info_params)
-    existing_notes_info = response.json()['result']
+    existing_notes_info = response['result']
 
     existing_notes_info = [
         _extract_note_data_from_info(note_info)
