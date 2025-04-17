@@ -69,9 +69,10 @@ for deck_filename, deck_data in list(DECKS.items()):
     if 'model_name' not in deck_data:
         for sheet_name, inner_deck_data in list(deck_data.items()):
             inner_deck_name = sheet_name.split('.')[0]
+            full_deck_name = f'{deck_name}::{inner_deck_name}'
             inner_deck_data.update({
-                'deck_name': f'{deck_name}::{inner_deck_name}',
-                'deck_id': get_deck_id(deck_name),
+                'deck_name': full_deck_name,
+                'deck_id': get_deck_id(full_deck_name),
                 'model_id': get_model_id(inner_deck_data['model_name']),
             })
             DECKS[f'{deck_name} - {sheet_name}'] = inner_deck_data

@@ -14,7 +14,8 @@ def get_deck_data(filename: str) -> tuple[str, list[str], str, str]:
         field_names = DECKS[filename]['field_names']
         model_name = DECKS[filename]['model_name']
         unique_field = DECKS[filename]['unique_field']
-        return deck_name, field_names, model_name, unique_field
+        deck_id = DECKS[filename]['deck_id']
+        return deck_name, field_names, model_name, unique_field, deck_id
     except KeyError:
         raise ValueError(
             f"The file '{filename}' does not have a corresponding deck "
@@ -67,7 +68,12 @@ def import_csv_to_anki(filename: str, deck_name: str | None = None):
     """
     Perform a bulk import of notes into Anki, updating existing notes or adding new ones.
     """
-    deck_name_from_data, field_names, model_name, unique_field = get_deck_data(filename)
+    deck_name_from_data, field_names, model_name, unique_field, deck_id = get_deck_data(filename)
+    if deck_id is None:
+        raise Exception(
+            f'Deck with name {deck_name_from_data} not found in Anki.'
+        )
+
     deck_name = (
         f'{deck_name_from_data}::{deck_name}' if deck_name else deck_name_from_data
     )
