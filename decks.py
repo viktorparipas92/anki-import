@@ -15,6 +15,8 @@ FRENCH_VOCAB_FIELDS = [
     'Pronunciation',
 ]
 
+NOUN_TRANSLATION_FIELDS = ['Source', 'Article', 'English']
+
 DECKS = {
     'Words learned - GER.csv': {
         'field_names': GERMAN_FIELDS,
@@ -43,11 +45,18 @@ DECKS = {
     },
     'Spanish grammar & vocab': {
         'Nouns - Translation.csv': {
-            'field_names': ['Source', 'Article', 'English'],
+            'field_names': NOUN_TRANSLATION_FIELDS,
             'unique_field': 'Source',
             'model_name': 'Noun - Translation with gender',
         }
-    }
+    },
+    'Italian grammar & vocab': {
+        'Nouns - Translation.csv': {
+            'field_names': NOUN_TRANSLATION_FIELDS,
+            'unique_field': 'Source',
+            'model_name': 'Noun - Translation with gender',
+        },
+    },
 }
 
 for deck_filename, deck_data in list(DECKS.items()):

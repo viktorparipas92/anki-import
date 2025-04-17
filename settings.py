@@ -7,5 +7,5 @@ SPREADSHEETS = {
     'Mixed': '1t-rfHgosuCshh-ifwU5T5b-mSdLPc5auH36iN5pV39M',
     'FRA': '198AhauZNmATOQCXsXHsBxu7KEcTp7NjEEeSMOuphX-k',
     'ESP': '1wzzppztmZjP9rtsLIE-0OTVOB4ojdxaUM05-UiayA9k',
-    'ITA': '/1GiQAQM6SP-yD1Yf1qBUWQiopa9O5xEcqkARiUnmkJvk',
+    'ITA': '1GiQAQM6SP-yD1Yf1qBUWQiopa9O5xEcqkARiUnmkJvk',
 }
