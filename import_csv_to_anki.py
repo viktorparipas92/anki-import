@@ -2,6 +2,7 @@ import csv
 import sys
 
 from anki_requests import make_anki_request
+from create_deck import create_deck
 from decks import DECKS
 
 
@@ -67,9 +68,7 @@ def import_csv_to_anki(filename: str, deck_name: str | None = None):
     """
     deck_name_from_data, field_names, model_name, unique_field, deck_id = get_deck_data(filename)
     if deck_id is None:
-        raise Exception(
-            f'Deck with name {deck_name_from_data} not found in Anki.'
-        )
+        create_deck(deck_name_from_data)
 
     deck_name = (
         f'{deck_name_from_data}::{deck_name}' if deck_name else deck_name_from_data
