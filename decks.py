@@ -59,6 +59,15 @@ DECKS = {
     },
 }
 
+
+def _get_additional_deck_data(deck_name: str, deck_data: dict) -> dict:
+    return {
+        'deck_name': deck_name,
+        'deck_id': get_deck_id(deck_name),
+        'model_id': get_model_id(deck_data['model_name']),
+    }
+
+
 for deck_filename, deck_data in list(DECKS.items()):
     # The deck name is the same as the filename without the extension.
     deck_name = deck_filename.split('.')[0]
@@ -70,16 +79,12 @@ for deck_filename, deck_data in list(DECKS.items()):
         for sheet_name, inner_deck_data in list(deck_data.items()):
             inner_deck_name = sheet_name.split('.')[0]
             full_deck_name = f'{deck_name}::{inner_deck_name}'
-            inner_deck_data.update({
-                'deck_name': full_deck_name,
-                'deck_id': get_deck_id(full_deck_name),
-                'model_id': get_model_id(inner_deck_data['model_name']),
-            })
+            additional_deck_data = _get_additional_deck_data(
+                full_deck_name, inner_deck_data
+            )
+            inner_deck_data.update(additional_deck_data)
             DECKS[f'{deck_name} - {sheet_name}'] = inner_deck_data
     else:
-        deck_data.update({
-            'deck_name': deck_name,
-            'deck_id': get_deck_id(deck_name),
-            'model_id': get_model_id(deck_data['model_name']),
-        })
+        additional_deck_data = _get_additional_deck_data(deck_name, deck_data)
+        deck_data.update(deck_data)
         DECKS[deck_filename] = deck_data
