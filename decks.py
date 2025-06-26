@@ -86,5 +86,5 @@ for deck_filename, deck_data in list(DECKS.items()):
             DECKS[f'{deck_name} - {sheet_name}'] = inner_deck_data
     else:
         additional_deck_data = _get_additional_deck_data(deck_name, deck_data)
-        deck_data.update(deck_data)
+        deck_data.update(additional_deck_data)
         DECKS[deck_filename] = deck_data

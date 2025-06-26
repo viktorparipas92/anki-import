@@ -6,7 +6,7 @@ from create_deck import create_deck
 from decks import DECKS
 
 
-def get_deck_data(filename: str) -> tuple[str, list[str], str, str]:
+def get_deck_data(filename: str) -> tuple[str, list[str], str, str, str]:
     try:
         deck_name = DECKS[filename]['deck_name']
         field_names = DECKS[filename]['field_names']
@@ -14,10 +14,10 @@ def get_deck_data(filename: str) -> tuple[str, list[str], str, str]:
         unique_field = DECKS[filename]['unique_field']
         deck_id = DECKS[filename]['deck_id']
         return deck_name, field_names, model_name, unique_field, deck_id
-    except KeyError:
+    except KeyError as e:
         raise ValueError(
             f"The file '{filename}' does not have a corresponding deck "
-            f"name in the DECKS dictionary. Please add it."
+            f"name in the DECKS dictionary. Please add it. {e}"
         )
 
 
