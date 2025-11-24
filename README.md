@@ -7,6 +7,9 @@
 
 ## Google credentials
 - Ensure that an API key is generated so you can use the Google Spreadsheet API.
+  1. Go to https://console.cloud.google.com
+  2. Go to **IAM and Admin** > **Service Accounts**
+  3. Create new API key, and it will be automatically downloaded.
 - The credentials should be stored in a JSON file. 
 - The filename must be added to `settings.py` as `SERVICE_ACCOUNT_FILE`.
 
@@ -30,6 +33,14 @@ pip install -r requirements.txt
 python download_and_import.py <Mixed|FRA|ESP|ITA> <sheet_name>
 ```
 
+## Examples
+```bash
+python download_and_import.py FRA Export "A2-B1::21. L'argent, la banque"
+python download_and_import.py Mixed <FRA|ITA|GER|SWE>
+python download_and_import.py ESP "Nouns - Translation"
+python download_and_import.py ITA "Nouns - Translation"
+
+```
 # Deployment to NAS
 ## Enable SSH
 - Go to **Control Panel** > **Terminal & SNMP** and check **Enable SSH service**.
