@@ -4,7 +4,7 @@ from requests import Response
 from settings import ANKI_CONNECT_URL
 
 
-def make_anki_request(action: str, *, params: dict | None = None) -> Response:
+def make_anki_request(action: str, *, params: dict | None = None) -> dict:
     """Send a request to AnkiConnect."""
     payload = {
         'action': action,
