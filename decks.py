@@ -16,6 +16,8 @@ FRENCH_VOCAB_FIELDS = [
 ]
 
 NOUN_TRANSLATION_FIELDS = ['Key', 'Source_pk', 'Article_pk', 'English']
+VERB_TRANSLATION_FIELDS = ['Key', 'Source', 'English']
+NOUN_PLURAL_FIELDS = ['Article_pk', 'Source_pk', 'English', 'Plural article', 'Plural']
 
 DECKS = {
     'Words learned - GER.csv': {
@@ -48,6 +50,16 @@ DECKS = {
             'field_names': NOUN_TRANSLATION_FIELDS,
             'unique_field': 'Key',
             'model_name': 'Noun - Translation with gender',
+        },
+        'Nouns - Plural.csv': {
+            'field_names': NOUN_PLURAL_FIELDS,
+            'unique_field': 'Source_pk',
+            'model_name': 'Spanish - Nouns plural',
+        },
+        'Verbs - Translation.csv': {
+            'field_names': VERB_TRANSLATION_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Verb - Translation',
         }
     },
     'Italian grammar & vocab': {
@@ -56,6 +68,11 @@ DECKS = {
             'unique_field': 'Key',
             'model_name': 'Noun - Translation with gender',
         },
+        'Verbs - Translation.csv': {
+            'field_names': VERB_TRANSLATION_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Verb - Translation',
+        }
     },
 }
 
