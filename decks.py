@@ -51,11 +51,11 @@ DECKS = {
             'unique_field': 'Key',
             'model_name': 'Noun - Translation with gender',
         },
-        'Nouns - Plural.csv': {
-            'field_names': NOUN_PLURAL_FIELDS,
-            'unique_field': 'Source_pk',
-            'model_name': 'Spanish - Nouns plural',
-        },
+        # 'Nouns - Plural.csv': {
+        #     'field_names': NOUN_PLURAL_FIELDS,
+        #     'unique_field': 'Source_pk',
+        #     'model_name': 'Spanish - Nouns plural',
+        # },
         'Verbs - Translation.csv': {
             'field_names': VERB_TRANSLATION_FIELDS,
             'unique_field': 'Key',
