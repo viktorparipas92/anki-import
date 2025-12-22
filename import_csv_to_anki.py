@@ -100,8 +100,6 @@ def import_csv_to_anki(filename: str, deck_name: str | None = None):
         print('Adding new notes...')
         make_anki_request('addNotes', params={'notes': notes_to_add})
 
-    print('Import completed.')
-
 
 def fetch_existing_notes(deck_name: str, unique_field: str) -> dict[str, dict]:
     print('Fetching existing notes...')
