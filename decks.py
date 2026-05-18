@@ -15,6 +15,7 @@ FRENCH_VOCAB_FIELDS = [
     'Pronunciation',
 ]
 
+ADJECTIVE_TRANSLATION_FIELDS = ['Key', 'Source', 'English', 'Etymology', 'Pronunciation']
 NOUN_TRANSLATION_FIELDS = ['Key', 'Source_pk', 'Article_pk', 'English']
 VERB_TRANSLATION_FIELDS = ['Key', 'Source', 'English']
 NOUN_PLURAL_FIELDS = ['Article_pk', 'Source_pk', 'English', 'Plural article', 'Plural']
@@ -47,6 +48,11 @@ DECKS = {
         'model_name': 'French vocab',
     },
     'Spanish grammar & vocab': {
+        'Adjectives - Translation.csv': {
+            'field_names': ADJECTIVE_TRANSLATION_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Adjective - Translation',
+        },
         'Nouns - Translation.csv': {
             'field_names': NOUN_TRANSLATION_FIELDS,
             'unique_field': 'Key',
@@ -69,6 +75,11 @@ DECKS = {
         },
     },
     'Italian grammar & vocab': {
+        'Adjectives - Translation.csv': {
+            'field_names': ADJECTIVE_TRANSLATION_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Adjective - Translation',
+        },
         'Nouns - Translation.csv': {
             'field_names': NOUN_TRANSLATION_FIELDS,
             'unique_field': 'Key',
