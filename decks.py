@@ -2,7 +2,8 @@ from get_deck_id import get_deck_id
 from get_model_id import get_model_id
 
 GERMAN_FIELDS = ['Origin', 'Article', 'Usage', 'English']
-SWEDISH_FIELDS = FRENCH_FIELDS = GERMAN_FIELDS
+FRENCH_FIELDS = GERMAN_FIELDS
+SWEDISH_FIELDS = ['Key', 'Origin', 'Article', 'Usage', 'English', 'Type', 'Category', 'Etymology', 'Pronunciation']
 ITALIAN_FIELDS = ['Origin', 'Gender', 'English', 'Usage']
 
 FRENCH_VOCAB_FIELDS = [
@@ -32,11 +33,6 @@ DECKS = {
         'unique_field': 'Origin',
         'model_name': 'Italian',
     },
-    'Words learned - SWE.csv': {
-        'field_names': SWEDISH_FIELDS,
-        'unique_field': 'Origin',
-        'model_name': 'Swedish',
-    },
     'Words learned - FRA.csv': {
         'field_names': FRENCH_FIELDS,
         'unique_field': 'Origin',
@@ -46,6 +42,13 @@ DECKS = {
         'field_names': FRENCH_VOCAB_FIELDS,
         'unique_field': 'French',
         'model_name': 'French vocab',
+    },
+    'Swedish vocab': {
+        'All.csv': {
+            'field_names': SWEDISH_FIELDS,
+            'unique_field': 'Origin',
+            'model_name': 'Swedish',
+        },
     },
     'Spanish grammar & vocab': {
         'Adjectives - Translation.csv': {

@@ -41,7 +41,7 @@ if __name__ == '__main__':
     from decks import DECKS
 
     script_name = 'download_and_import.py'
-    mixed_spreadsheet_languages = ['GER', 'ITA', 'FRA', 'SWE']
+    mixed_spreadsheet_languages = ['GER', 'ITA', 'FRA']
     for language in mixed_spreadsheet_languages:
         subprocess.run(['python3', script_name, 'Mixed', language])
 
@@ -51,6 +51,7 @@ if __name__ == '__main__':
     countries_by_spreadsheet_name = {
         'Spanish grammar & vocab': 'ESP',
         'Italian grammar & vocab': 'ITA',
+        'Swedish vocab': 'SWE',
     }
     for spreadsheet_name, country_code in countries_by_spreadsheet_name.items():
         for sheet_name in DECKS[spreadsheet_name]:

@@ -8,4 +8,5 @@ SPREADSHEETS = {
     'FRA': '198AhauZNmATOQCXsXHsBxu7KEcTp7NjEEeSMOuphX-k',
     'ESP': '1wzzppztmZjP9rtsLIE-0OTVOB4ojdxaUM05-UiayA9k',
     'ITA': '1GiQAQM6SP-yD1Yf1qBUWQiopa9O5xEcqkARiUnmkJvk',
+    'SWE': '1ZMt_-XL3wQn52VyOavFGkjWkaqKBiHA-vAxWN4qv5fE',
 }
