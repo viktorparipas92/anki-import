@@ -62,6 +62,11 @@ DECKS = {
             'unique_field': 'Key',
             'model_name': 'Noun - Translation with gender',
         },
+        'Nouns - Phrases.csv': {
+            'field_names': NOUN_TRANSLATION_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Noun - Translation with gender',
+        },
         # 'Nouns - Plural.csv': {
         #     'field_names': NOUN_PLURAL_FIELDS,
         #     'unique_field': 'Source_pk',
@@ -90,6 +95,11 @@ DECKS = {
             'model_name': 'Adjective - Translation',
         },
         'Nouns - Translation.csv': {
+            'field_names': NOUN_TRANSLATION_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Noun - Translation with gender',
+        },
+        'Nouns - Phrases.csv': {
             'field_names': NOUN_TRANSLATION_FIELDS,
             'unique_field': 'Key',
             'model_name': 'Noun - Translation with gender',
