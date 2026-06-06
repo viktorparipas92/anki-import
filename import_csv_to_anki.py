@@ -97,6 +97,13 @@ def import_csv_to_anki(filename: str, deck_name: str | None = None):
 
     print(f'{len(notes_to_add)} notes to add')
     if notes_to_add:
+        print('Checking if new notes can be added...')
+        json_response = make_anki_request('canAddNotes', params={'notes': notes_to_add})
+        can_add: list[bool] = json_response['result']
+        if False in can_add:
+            duplicate_notes = [n for n, ok in zip(notes_to_add, can_add) if not ok]
+            raise ValueError(f'Cannot add the following notes: {[n["fields"] for n in duplicate_notes]}')
+
         print('Adding new notes...')
         make_anki_request('addNotes', params={'notes': notes_to_add})
 
