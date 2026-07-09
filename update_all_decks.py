@@ -1,31 +1,7 @@
 import argparse
 import subprocess
-import time
 
-from anki_requests import make_anki_request
-
-
-
-def wait_for_ankiconnect(timeout: int = 30, delay: float = 1) -> bool:
-    """Wait until AnkiConnect responds."""
-    start_time = time.time()
-    anki_started = False
-    while True:
-        try:
-            version_data = make_anki_request('version')
-            print(f'Anki connect is ready. Version: {version_data["result"]}.')
-            return True
-        except Exception:
-            print('AnkiConnect is not running yet.')
-            if not anki_started:
-                print(f'Opening Anki...')
-                subprocess.Popen(['open', '-a', 'Anki'])
-                anki_started = True
-
-            if time.time() - start_time > timeout:
-                return False
-
-            time.sleep(delay)
+from anki_requests import wait_for_ankiconnect
 
 
 
