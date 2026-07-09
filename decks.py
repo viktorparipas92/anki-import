@@ -1,5 +1,5 @@
-from get_deck_id import get_deck_id
-from get_model_id import get_model_id
+from anki_actions.get_deck_id import get_deck_id
+from anki_actions.get_model_id import get_model_id
 
 GERMAN_FIELDS = ['Origin', 'Article', 'Usage', 'English']
 FRENCH_FIELDS = GERMAN_FIELDS

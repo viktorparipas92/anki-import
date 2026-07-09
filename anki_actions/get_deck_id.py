@@ -10,7 +10,7 @@ def get_deck_id(deck_name):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print('Usage: python get_deck_id.py <deck_name>')
+        print('Usage: python -m anki_actions.get_deck_id <deck_name>')
         sys.exit(1)
 
     deck_name = sys.argv[1]

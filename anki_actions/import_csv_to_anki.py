@@ -2,7 +2,7 @@ import csv
 import sys
 
 from anki_requests import make_anki_request
-from create_deck import create_deck
+from anki_actions.create_deck import create_deck
 from decks import DECKS
 
 
@@ -151,7 +151,7 @@ def filter_by_keys(dictionary: dict, keys: list[str]) -> dict:
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print('Usage: python import-csv-to-anki.py <csv_file_path>')
+        print('Usage: python -m anki_actions.import_csv_to_anki <csv_file_path>')
         sys.exit(1)
 
     filename = sys.argv[1]

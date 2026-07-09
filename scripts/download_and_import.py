@@ -2,14 +2,14 @@ import os
 import sys
 
 from download_sheet import download_sheet
-from import_csv_to_anki import import_csv_to_anki
+from anki_actions.import_csv_to_anki import import_csv_to_anki
 
 
 if __name__ == '__main__':
     num_arguments = len(sys.argv)
     if num_arguments < 3 or num_arguments > 4:
         print(
-            'Usage: python download_and_import.py <Mixed|ITA|ESP|FRA|SWE> '
+            'Usage: python -m scripts.download_and_import <Mixed|ITA|ESP|FRA|SWE> '
             '<sheet_name> [<deck_name>]'
         )
         sys.exit(1)
