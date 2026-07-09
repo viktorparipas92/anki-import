@@ -14,10 +14,10 @@
 - The filename must be added to `settings.py` as `SERVICE_ACCOUNT_FILE`.
 
 ## Spreadsheets
-- The script is designed to work with a single Google Spreadsheet with multiple tabs.
-- The column names in the spreadsheet must match the field names of the specified model.
-- The ID of the spreadsheet must be added to `settings.py` as `SPREADSHEET_ID`. You can find the ID in the URL of the spreadsheet.
-- The spreadsheet needs to be shared with the service account.
+- The scripts work with multiple Google Spreadsheets, each with multiple tabs (sheets).
+- The column names in a sheet must match the field names of the specified model.
+- Each spreadsheet ID must be added to the `SPREADSHEETS` dict in `settings.py`, keyed by language (e.g. `Mixed`, `FRA`, `ESP`, `ITA`, `SWE`). You can find the ID in the spreadsheet URL.
+- Each spreadsheet needs to be shared with the service account.
 
 ## Decks and models
 The decks and models specified in `decks.py` must be present in Anki.
@@ -28,18 +28,45 @@ Install the dependencies from the requirements file:
 pip install -r requirements.txt
 ```
 
-# How to run the script
+# How to run
+
+Run all commands from the repository root, so the `scripts` and `anki_actions`
+packages are importable.
+
+The code is organised as:
+- `anki_actions/` — modules that talk to Anki (`sync`, `create_deck`, `import_csv_to_anki`, `get_deck_id`, `get_model_id`).
+- `scripts/` — entry points (`update_all_decks`, `download_and_import`).
+- `anki_requests.py`, `settings.py`, `download_sheet.py`, `decks.py` — shared helpers, config and data at the root.
+
+## Import a single sheet
 ```bash
-python download_and_import.py <Mixed|FRA|ESP|ITA> <sheet_name>
+python -m scripts.download_and_import <Mixed|FRA|ESP|ITA|SWE> <sheet_name> [<deck_name>]
 ```
 
-## Examples
+### Examples
 ```bash
-python download_and_import.py FRA Export "A2-B1::21. L'argent, la banque"
-python download_and_import.py Mixed <FRA|ITA|GER|SWE>
-python download_and_import.py ESP "Nouns - Translation"
-python download_and_import.py ITA "Nouns - Translation"
+python -m scripts.download_and_import FRA Export "A2-B1::21. L'argent, la banque"
+python -m scripts.download_and_import Mixed GER
+python -m scripts.download_and_import ESP "Nouns - Translation"
+python -m scripts.download_and_import ITA "Nouns - Translation"
+```
 
+## Import everything, then sync
+`update_all_decks` opens Anki if needed and imports every configured sheet.
+```bash
+python -m scripts.update_all_decks -lfd "<latest French deck>"
+python -m anki_actions.sync
+```
+
+## Sync to AnkiWeb
+```bash
+python -m anki_actions.sync
+```
+
+## Scheduled run
+A user cron job runs the full import + sync daily at 12:00 (see `crontab -l`):
+```
+0 12 * * * cd <repo> && . .venv/bin/activate && python -m scripts.update_all_decks -lfd "<latest French deck>" && python -m anki_actions.sync
 ```
 # Deployment to NAS
 ## Enable SSH
