@@ -3,48 +3,88 @@ name: Deploy to Synology NAS
 on:
   push:
     branches:
-      - main  # Trigger the workflow on push to the main branch
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-to-synology
+
+env:
+  NAS_PATH: /volume1/docker/anki-import
+  NAS: ${{ secrets.NAS_USERNAME }}@${{ secrets.NAS_HOST }}
+  SSH_PORT: ${{ secrets.NAS_SSH_PORT }}
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.5.3
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Deploy to Synology NAS
-      env:
-        CONTAINER_NAME: "python-container" 
-        IMAGE_NAME: "python:3.9-slim"
-        WORKDIR: "/volume1/docker/import-to-anki"
-      run: |
-        ssh ${{ secrets.NAS_USERNAME }}@${{ secrets.NAS_HOST }} -p ${{ secrets.NAS_SSH_PORT }} << 'EOF'
-          # Ensure the WORKDIR exists, create it if it doesn't
-          if [ ! -d "${{ env.WORKDIR }}" ]; then
-            sudo mkdir -p ${{ env.WORKDIR }}
-            sudo chown ${{ secrets.NAS_USERNAME }}:{{ secrets.NAS_USERNAME }} ${{ env.WORKDIR }}
+      - name: Trust the NAS host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "$SSH_PORT" -H "${{ secrets.NAS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Copy the repository to the NAS
+        run: |
+          ssh -p "$SSH_PORT" "$NAS" "mkdir -p '$NAS_PATH'"
+          rsync -avz \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '.venv' \
+            --exclude '.cache' \
+            --exclude '__pycache__' \
+            --exclude '.idea' \
+            --exclude '.env' \
+            --exclude 'secrets' \
+            -e "ssh -p $SSH_PORT" \
+            ./ "$NAS:$NAS_PATH/"
+
+      - name: Write the service account key
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$SERVICE_ACCOUNT_JSON" ]; then
+            echo 'GOOGLE_SERVICE_ACCOUNT_JSON is not set, keeping the key already on the NAS.'
+            exit 0
           fi
-          
-          cd ${{ env.WORKDIR }}
-          
-          # Pull the pre-existing Python image from Docker Hub
-          sudo docker pull ${{ env.IMAGE_NAME }}
-          
-          # Stop and remove the old container (if any)
-          if [ "$(sudo docker ps -aq -f name=${{ env.CONTAINER_NAME }})" ]; then
-            sudo docker stop ${{ env.CONTAINER_NAME }}
-            sudo docker rm ${{ env.CONTAINER_NAME }}
+          printf '%s' "$SERVICE_ACCOUNT_JSON" | ssh -p "$SSH_PORT" "$NAS" "
+            set -e
+            mkdir -p '$NAS_PATH/secrets'
+            cat > '$NAS_PATH/secrets/service-account.json'
+            chmod 600 '$NAS_PATH/secrets/service-account.json'
+          "
+
+      - name: Write .env
+        env:
+          LATEST_FRENCH_DECK: ${{ vars.LATEST_FRENCH_DECK }}
+          NAS_TZ: ${{ vars.TZ }}
+        run: |
+          if [ -z "$LATEST_FRENCH_DECK" ]; then
+            echo 'LATEST_FRENCH_DECK is not set, keeping the .env already on the NAS.'
+            exit 0
           fi
-          
-          # Run the container with the Python image and mount the current working directory
-          sudo docker run -d --name ${{ env.CONTAINER_NAME }} -v ${{ env.WORKDIR }}:/app ${{ env.IMAGE_NAME }}
-          
-          # Install Python dependencies inside the container
-          sudo docker exec ${{ env.CONTAINER_NAME }} pip install -r /app/requirements.txt
-        EOF
+          {
+            echo "SERVICE_ACCOUNT_FILE=secrets/service-account.json"
+            echo "LATEST_FRENCH_DECK=$LATEST_FRENCH_DECK"
+            echo "TZ=${NAS_TZ:-UTC}"
+          } > env.deploy
+          scp -P "$SSH_PORT" env.deploy "$NAS:$NAS_PATH/.env"
+
+      # sudo -n fails fast instead of hanging on a password prompt, so the NAS user
+      # needs NOPASSWD for docker in /etc/sudoers.
+      - name: Start Anki and rebuild the importer
+        run: |
+          ssh -p "$SSH_PORT" "$NAS" "
+            set -e
+            cd '$NAS_PATH'
+            sudo -n docker compose up -d anki-desktop
+            sudo -n docker compose --profile on-demand build anki-importer
+          "

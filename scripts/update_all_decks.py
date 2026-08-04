@@ -1,13 +1,19 @@
 import argparse
 import subprocess
 
+import settings
 from anki_requests import wait_for_ankiconnect
-
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-lfd', '--latest-french-deck', required=True)
+    parser.add_argument(
+        '-lfd',
+        '--latest-french-deck',
+        default=settings.LATEST_FRENCH_DECK,
+        required=not settings.LATEST_FRENCH_DECK,
+        help='Defaults to the LATEST_FRENCH_DECK environment variable',
+    )
     args = parser.parse_args()
 
     is_anki_ready = wait_for_ankiconnect()

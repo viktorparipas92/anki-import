@@ -1,5 +1,11 @@
-ANKI_CONNECT_URL = 'http://localhost:8765'
-SERVICE_ACCOUNT_FILE = 'secrets/quickstart-304216-ac21bea24af6.json'
+import os
+
+ANKI_CONNECT_URL = os.environ.get('ANKI_CONNECT_URL', 'http://localhost:8765')
+ANKI_CONNECT_TIMEOUT = int(os.environ.get('ANKI_CONNECT_TIMEOUT', '30'))
+LATEST_FRENCH_DECK = os.environ.get('LATEST_FRENCH_DECK', '')
+SERVICE_ACCOUNT_FILE = os.environ.get(
+    'SERVICE_ACCOUNT_FILE', 'secrets/quickstart-304216-ac21bea24af6.json'
+)
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 WRITE_SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SPREADSHEET_ID = '1t-rfHgosuCshh-ifwU5T5b-mSdLPc5auH36iN5pV39M'

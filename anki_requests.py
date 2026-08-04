@@ -1,9 +1,13 @@
 import subprocess
+import sys
 import time
+from urllib.parse import urlparse
 
 import requests
 
-from settings import ANKI_CONNECT_URL
+import settings
+
+LOCAL_HOSTNAMES = frozenset({'localhost', '127.0.0.1', '::1'})
 
 
 def make_anki_request(action: str, *, params: dict | None = None) -> dict:
@@ -13,7 +17,7 @@ def make_anki_request(action: str, *, params: dict | None = None) -> dict:
         'version': 6,
         'params': params or {}
     }
-    response = requests.post(ANKI_CONNECT_URL, json=payload)
+    response = requests.post(settings.ANKI_CONNECT_URL, json=payload)
     json_response = response.json()
     if error := json_response.get('error'):
         raise Exception(f'AnkiConnect Error: {error} - {payload}')
@@ -21,8 +25,9 @@ def make_anki_request(action: str, *, params: dict | None = None) -> dict:
     return json_response
 
 
-def wait_for_ankiconnect(timeout: int = 30, delay: float = 1) -> bool:
-    """Open Anki if it is not running and wait until AnkiConnect responds."""
+def wait_for_ankiconnect(timeout: int | None = None, delay: float = 1) -> bool:
+    """Wait until AnkiConnect responds, opening Anki first if it runs locally."""
+    timeout = settings.ANKI_CONNECT_TIMEOUT if timeout is None else timeout
     start_time = time.time()
     anki_started = False
     while True:
@@ -32,12 +37,24 @@ def wait_for_ankiconnect(timeout: int = 30, delay: float = 1) -> bool:
             return True
         except Exception:
             print('AnkiConnect is not running yet.')
-            if not anki_started:
-                print('Opening Anki...')
-                subprocess.Popen(['open', '-a', 'Anki'])
+            if not anki_started and _can_open_anki():
+                _open_anki()
                 anki_started = True
 
             if time.time() - start_time > timeout:
                 return False
 
             time.sleep(delay)
+
+
+def _can_open_anki() -> bool:
+    hostname = urlparse(settings.ANKI_CONNECT_URL).hostname
+    return sys.platform == 'darwin' and hostname in LOCAL_HOSTNAMES
+
+
+def _open_anki():
+    print('Opening Anki...')
+    try:
+        subprocess.Popen(['open', '-a', 'Anki'])
+    except OSError as error:
+        print(f'Could not open Anki: {error}')

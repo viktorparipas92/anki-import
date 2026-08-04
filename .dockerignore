@@ -1,0 +1,16 @@
+.git
+.github
+.gitignore
+.idea
+.venv
+.cache
+__pycache__
+*.pyc
+secrets
+*.csv
+.env
+Dockerfile
+.dockerignore
+docker-compose.yml
+deploy.sh
+README.md

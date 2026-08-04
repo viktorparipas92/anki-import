@@ -1,11 +1,13 @@
-# Prerequisites
-## Installing the AnkiConnect Add-on
+# Local use
+
+## Prerequisites
+### Installing the AnkiConnect Add-on
 - Open Anki.
 - Go to **Tools** > **Add-ons** > **Get Add-ons**.
 - Enter the code `2055492159` and click **OK**.
 - Restart Anki. 
 
-## Google credentials
+### Google credentials
 - Ensure that an API key is generated so you can use the Google Spreadsheet API.
   1. Go to https://console.cloud.google.com
   2. Go to **IAM and Admin** > **Service Accounts**
@@ -13,23 +15,22 @@
 - The credentials should be stored in a JSON file. 
 - The filename must be added to `settings.py` as `SERVICE_ACCOUNT_FILE`.
 
-## Spreadsheets
+### Spreadsheets
 - The scripts work with multiple Google Spreadsheets, each with multiple tabs (sheets).
 - The column names in a sheet must match the field names of the specified model.
 - Each spreadsheet ID must be added to the `SPREADSHEETS` dict in `settings.py`, keyed by language (e.g. `Mixed`, `FRA`, `ESP`, `ITA`, `SWE`). You can find the ID in the spreadsheet URL.
 - Each spreadsheet needs to be shared with the service account.
 
-## Decks and models
+### Decks and models
 The decks and models specified in `decks.py` must be present in Anki.
 
-# Dependencies
+## Dependencies
 Install the dependencies from the requirements file:
 ```bash
 pip install -r requirements.txt
 ```
 
-# How to run
-
+## How to run
 Run all commands from the repository root, so the `scripts` and `anki_actions`
 packages are importable.
 
@@ -39,12 +40,12 @@ The code is organised as:
 - `scripts/` — entry points (`update_all_decks`, `download_and_import`, `fill_translations`).
 - `anki_requests.py`, `settings.py`, `sheets.py`, `fill_translations.py`, `decks.py` — shared logic, config and data at the root.
 
-## Import a single sheet
+### Import a single sheet
 ```bash
 python -m scripts.download_and_import <Mixed|FRA|ESP|ITA|SWE> <sheet_name> [<deck_name>]
 ```
 
-### Examples
+#### Examples
 ```bash
 python -m scripts.download_and_import FRA Export "A2-B1::21. L'argent, la banque"
 python -m scripts.download_and_import Mixed GER
@@ -52,7 +53,7 @@ python -m scripts.download_and_import ESP "Nouns - Translation"
 python -m scripts.download_and_import ITA "Nouns - Translation"
 ```
 
-## Fill in missing translations
+### Fill in missing translations
 Fills the empty cells of a sheet from Svensk ordbok and English Wiktionary.
 Cells that already have a value are never changed. Needs edit access to the
 spreadsheet.
@@ -61,7 +62,7 @@ spreadsheet.
 python -m scripts.fill_translations <Mixed|FRA|ESP|ITA|SWE> <sheet_name> [--dry-run]
 ```
 
-### Examples
+#### Examples
 ```bash
 python -m scripts.fill_translations SWE Input --dry-run
 python -m scripts.fill_translations SWE Input
@@ -70,47 +71,147 @@ python -m scripts.fill_translations SWE Input
 `Article`, `Type`, `Category`, `Usage` and `English` are filled by default; ask
 for `Etymology` or `Pronunciation` with `--columns`. See `--help` for the rest.
 
-## Import everything, then sync
+### Import everything, then sync
 `update_all_decks` opens Anki if needed and imports every configured sheet.
 ```bash
 python -m scripts.update_all_decks -lfd "<latest French deck>"
 python -m anki_actions.sync
 ```
 
-## Sync to AnkiWeb
+### Sync to AnkiWeb
 ```bash
 python -m anki_actions.sync
 ```
 
-## Scheduled run
-A user cron job runs the full import + sync daily at 12:00 (see `crontab -l`):
+### Scheduled run
+Local only — the NAS uses DSM Task Scheduler instead. A user cron job runs the
+full import + sync daily at 12:00 (see `crontab -l`):
 ```
 0 12 * * * cd <repo> && . .venv/bin/activate && python -m scripts.update_all_decks -lfd "<latest French deck>" && python -m anki_actions.sync
 ```
-# Deployment to NAS
-## Enable SSH
+
+# Use on the NAS
+Anki runs in one container, the importer in another. Everything above keeps
+working locally without any of this.
+
+|  | Local | NAS |
+| --- | --- | --- |
+| Anki client | your desktop app, opened by the scripts | `anki-desktop` container, started by Compose |
+| Running a command | `python -m scripts.<name>` | `sudo docker compose --profile on-demand run --rm anki-importer python -m scripts.<name>` |
+| Latest French deck | `-lfd "<deck>"` | `LATEST_FRENCH_DECK` in `.env` |
+| Google credentials | `secrets/` in the repo | the same files, mounted read-only |
+| Dependencies | `pip install -r requirements.txt` | built into the importer image |
+| Scheduling | user cron | DSM Task Scheduler |
+
+## Prerequisites
+Everything here has to be done by hand, once.
+
+### Enable SSH — in DSM, in your browser
 - Go to **Control Panel** > **Terminal & SNMP** and check **Enable SSH service**.
-- Note the port number.
+- Note the port number shown next to it. It is currently `23232`.
 - This enables SSHing into the NAS using password authentication.
 
-### Add the public key to the server
+### Connect to the server — from your own machine
+`<USERNAME>` is a DSM account in the **administrators** group, since DSM refuses
+SSH for anyone else, and you log in with that account's DSM password.
+`<NAS_IP_ADDRESS>` is under **Control Panel** > **Network** > **Network Interface**.
 ```bash
-ssh-copy-id -p <PORT> -i ~/.ssh/id_rsa.pub <USERNAME>@<HOST>
+ssh <USERNAME>@<NAS_IP_ADDRESS> -p 23232
 ```
+
+### Add the public key to the server — from your own machine
+The deploy authenticates with a key, since it cannot type a password. Make a
+dedicated one rather than reusing a personal key.
+
+Run these on your own machine, **not** over SSH on the NAS — `ssh-copy-id` pushes
+the key from here to there. Log out of the NAS first if you are still connected.
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/anki-nas-deploy -C anki-import-deploy -N ""
+ssh-copy-id -p 23232 -i ~/.ssh/anki-nas-deploy.pub <USERNAME>@<NAS_IP_ADDRESS>
+```
+`~/.ssh/anki-nas-deploy` is then the `SSH_PRIVATE_KEY` secret below.
 - Set up file permissions
 ```bash
 chmod 700 /var/services/homes/<USERNAME>/.ssh
-sudo chown viktor-nas-admin:users /var/services/homes/<USERNAME>/.ssh/authorized_keys
+sudo chown <USERNAME>:users /var/services/homes/<USERNAME>/.ssh/authorized_keys
 chmod 600 /var/services/homes/<USERNAME>/.ssh/authorized_keys
 ```
 - Enable public key authentication in the SSH configuration file.
 ```bash
 sudo vi /etc/ssh/sshd_config
-# Uncomment the line `PubkeyAuthenticatigion yes`
-# Uncomment the line `AuthorizedKeysFile .ssh/authorized_keys
+# Uncomment the line `PubkeyAuthentication yes`
+# Uncomment the line `AuthorizedKeysFile .ssh/authorized_keys`
 ```
 
-## Connect to the server
+### Allow docker without a password — on the NAS, over SSH
 ```bash
-ssh <USERNAME>@<NAS_IP_ADDRESS> -p <PORT>
+which docker
+echo '<USERNAME> ALL=(ALL) NOPASSWD: /usr/local/bin/docker' | sudo tee -a /etc/sudoers
+sudo -n docker ps
 ```
+
+### Install the GitHub Actions runner — on the NAS, over SSH
+The workflow runs on `self-hosted`, because GitHub's hosted runners cannot reach the
+NAS on the LAN. Keep the repository private: a public one lets any pull request run
+code on the runner.
+```bash
+uname -m    # x86_64 -> linux-x64, aarch64 -> linux-arm64
+mkdir -p ~/actions-runner && cd ~/actions-runner
+```
+Take the `curl`, `tar` and `./config.sh` lines from **Settings** > **Actions** >
+**Runners** > **New self-hosted runner** > **Linux**; they carry the version and a
+registration token. Then:
+```bash
+sudo ./svc.sh install && sudo ./svc.sh start
+```
+If `svc.sh` fails for lack of systemd, run `./run.sh` from a **Task Scheduler**
+**Boot-up** trigger instead. The runner must show *Idle* before pushing.
+
+### Install Anki — in your browser
+Only possible once the first deploy has started the container, which ships
+without Anki itself.
+1. Open `http://<NAS_HOST>:3000`, press `1` then Enter to let the launcher
+   download Anki.
+2. Install the AnkiConnect add-on as under **Local use**, then restart Anki
+   (right-click the desktop > **Anki**). It then listens on `0.0.0.0:8765` inside
+   the Docker network.
+3. Log in to AnkiWeb, so `sync` works.
+
+### Schedule the daily run — in DSM, in your browser
+**Control Panel** > **Task Scheduler**, a user-defined script at 12:00:
+```bash
+cd <NAS_PATH> && sudo docker compose --profile on-demand run --rm anki-importer
+```
+
+## Deploy
+Pushing to `main` deploys, via `.github/workflows/deploy-to-synology.yml`. Set
+these repository secrets under **Settings** > **Secrets and variables** >
+**Actions**:
+
+| Secret | Value |
+| --- | --- |
+| `SSH_PRIVATE_KEY` | contents of `~/.ssh/anki-nas-deploy`, the file without `.pub` |
+| `NAS_HOST`, `NAS_USERNAME`, `NAS_SSH_PORT` | where to deploy, e.g. `23232` for the port |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | the whole service account JSON file |
+
+And these repository variables, on the same page:
+
+| Variable | Value |
+| --- | --- |
+| `LATEST_FRENCH_DECK` | e.g. `A2-B1::26. Others` |
+| `TZ` | optional, e.g. `Europe/Stockholm` |
+
+They have to be repository-level, not environment-level, since the workflow declares
+no environment. `NAS_PATH` is at the top of the workflow.
+`GOOGLE_SERVICE_ACCOUNT_JSON` and `LATEST_FRENCH_DECK` are written to the NAS on
+every deploy; leave either unset to keep the file already there instead.
+
+## How to run
+The scheduled task imports everything and syncs. Run it by hand the same way, or
+any other entry point:
+```bash
+sudo docker compose --profile on-demand run --rm anki-importer
+sudo docker compose --profile on-demand run --rm anki-importer python -m scripts.fill_translations SWE Input --dry-run
+```
+The importer is behind the `on-demand` profile, so `docker compose up` never
+starts it.

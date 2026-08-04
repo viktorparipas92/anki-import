@@ -1,0 +1,38 @@
+services:
+  anki-desktop:
+    image: chrislongros/anki-desktop:latest
+    container_name: anki-desktop
+    ports:
+      - "3000:3000"
+    volumes:
+      - anki_data:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-UTC}
+    security_opt:
+      - seccomp=unconfined
+    shm_size: 1gb
+    restart: unless-stopped
+
+  anki-importer:
+    build: .
+    profiles:
+      - on-demand
+    depends_on:
+      anki-desktop:
+        condition: service_healthy
+    environment:
+      - ANKI_CONNECT_URL=http://anki-desktop:8765
+      - ANKI_CONNECT_TIMEOUT=300
+      - LATEST_FRENCH_DECK=${LATEST_FRENCH_DECK:-}
+      - SERVICE_ACCOUNT_FILE=${SERVICE_ACCOUNT_FILE:-secrets/quickstart-304216-ac21bea24af6.json}
+      - TZ=${TZ:-UTC}
+    volumes:
+      - ./secrets:/app/secrets:ro
+      - dictionary_cache:/app/.cache
+    restart: "no"
+
+volumes:
+  anki_data:
+  dictionary_cache:
