@@ -22,19 +22,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Trust the NAS host key
+      # DSM has no ssh-agent, so the key goes in a file that ssh -i can read.
+      - name: Write the deploy key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -p "$SSH_PORT" -H "${{ secrets.NAS_HOST }}" >> ~/.ssh/known_hosts
+          install -m 600 /dev/null "$RUNNER_TEMP/deploy_key"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/deploy_key"
+          echo "SSH_KEY=$RUNNER_TEMP/deploy_key" >> "$GITHUB_ENV"
+          echo "SSH_OPTS=-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts" >> "$GITHUB_ENV"
 
+      # secrets/ and .env are not in the repository, so they are left as they are
+      # on the NAS.
       - name: Copy the repository to the NAS
         run: |
-          ssh -p "$SSH_PORT" "$NAS" "mkdir -p '$NAS_PATH'"
+          SSH="ssh -i $SSH_KEY -p $SSH_PORT $SSH_OPTS"
+          $SSH "$NAS" "mkdir -p '$NAS_PATH'"
           rsync -avz \
             --exclude '.git' \
             --exclude '.github' \
@@ -44,7 +47,7 @@ jobs:
             --exclude '.idea' \
             --exclude '.env' \
             --exclude 'secrets' \
-            -e "ssh -p $SSH_PORT" \
+            -e "$SSH" \
             ./ "$NAS:$NAS_PATH/"
 
       - name: Write the service account key
@@ -55,7 +58,7 @@ jobs:
             echo 'GOOGLE_SERVICE_ACCOUNT_JSON is not set, keeping the key already on the NAS.'
             exit 0
           fi
-          printf '%s' "$SERVICE_ACCOUNT_JSON" | ssh -p "$SSH_PORT" "$NAS" "
+          printf '%s' "$SERVICE_ACCOUNT_JSON" | ssh -i "$SSH_KEY" -p "$SSH_PORT" $SSH_OPTS "$NAS" "
             set -e
             mkdir -p '$NAS_PATH/secrets'
             cat > '$NAS_PATH/secrets/service-account.json'
@@ -76,13 +79,13 @@ jobs:
             echo "LATEST_FRENCH_DECK=$LATEST_FRENCH_DECK"
             echo "TZ=${NAS_TZ:-UTC}"
           } > env.deploy
-          scp -P "$SSH_PORT" env.deploy "$NAS:$NAS_PATH/.env"
+          scp -i "$SSH_KEY" -P "$SSH_PORT" $SSH_OPTS env.deploy "$NAS:$NAS_PATH/.env"
 
       # sudo -n fails fast instead of hanging on a password prompt, so the NAS user
       # needs NOPASSWD for docker in /etc/sudoers.
       - name: Start Anki and rebuild the importer
         run: |
-          ssh -p "$SSH_PORT" "$NAS" "
+          ssh -i "$SSH_KEY" -p "$SSH_PORT" $SSH_OPTS "$NAS" "
             set -e
             cd '$NAS_PATH'
             sudo -n docker compose up -d anki-desktop
