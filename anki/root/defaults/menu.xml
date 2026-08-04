@@ -3,7 +3,7 @@
     <menu id="root-menu" label="Anki Desktop">
         <item label="Anki">
             <action name="Execute">
-                <command>/usr/local/bin/anki</command>
+                <command>/config/anki-launcher/anki</command>
             </action>
         </item>
         <separator />
