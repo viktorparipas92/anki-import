@@ -1,7 +1,7 @@
 import os
 import sys
 
-from download_sheet import download_sheet
+from sheets import download_sheet
 from anki_actions.import_csv_to_anki import import_csv_to_anki
 
 

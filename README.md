@@ -35,8 +35,9 @@ packages are importable.
 
 The code is organised as:
 - `anki_actions/` — modules that talk to Anki (`sync`, `create_deck`, `import_csv_to_anki`, `get_deck_id`, `get_model_id`).
-- `scripts/` — entry points (`update_all_decks`, `download_and_import`).
-- `anki_requests.py`, `settings.py`, `download_sheet.py`, `decks.py` — shared helpers, config and data at the root.
+- `dictionaries/` — dictionary clients (`svensk_ordbok`, `wiktionary`).
+- `scripts/` — entry points (`update_all_decks`, `download_and_import`, `fill_translations`).
+- `anki_requests.py`, `settings.py`, `sheets.py`, `fill_translations.py`, `decks.py` — shared logic, config and data at the root.
 
 ## Import a single sheet
 ```bash
@@ -50,6 +51,24 @@ python -m scripts.download_and_import Mixed GER
 python -m scripts.download_and_import ESP "Nouns - Translation"
 python -m scripts.download_and_import ITA "Nouns - Translation"
 ```
+
+## Fill in missing translations
+Fills the empty cells of a sheet from Svensk ordbok and English Wiktionary.
+Cells that already have a value are never changed. Needs edit access to the
+spreadsheet.
+
+```bash
+python -m scripts.fill_translations <Mixed|FRA|ESP|ITA|SWE> <sheet_name> [--dry-run]
+```
+
+### Examples
+```bash
+python -m scripts.fill_translations SWE Input --dry-run
+python -m scripts.fill_translations SWE Input
+```
+
+`Article`, `Type`, `Category`, `Usage` and `English` are filled by default; ask
+for `Etymology` or `Pronunciation` with `--columns`. See `--help` for the rest.
 
 ## Import everything, then sync
 `update_all_decks` opens Anki if needed and imports every configured sheet.
