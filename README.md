@@ -165,8 +165,10 @@ If `svc.sh` fails for lack of systemd, run `./run.sh` from a **Task Scheduler**
 ### Install Anki — in your browser
 Only possible once the first deploy has started the container, which ships
 without Anki itself.
-1. Open `http://<NAS_HOST>:3000`, press `1` then Enter to let the launcher
-   download Anki.
+1. Open `http://<NAS_HOST>:3000`. In the launcher, choose a version and enter
+   `25.9.5`. Not the latest, which asks for `anki-release==26.8` and was never
+   published to PyPI, and not `26.5`, which needs Python 3.10 while the launcher
+   still declares support for 3.9, so `uv` cannot resolve it.
 2. Install the AnkiConnect add-on as under **Local use**, then restart Anki
    (right-click the desktop > **Anki**). It then listens on `0.0.0.0:8765` inside
    the Docker network.

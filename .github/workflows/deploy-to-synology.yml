@@ -60,5 +60,5 @@ jobs:
       - name: Start Anki and rebuild the importer
         run: |
           cd "$NAS_PATH"
-          sudo -n docker compose up -d anki-desktop
+          sudo -n docker compose up -d --build anki-desktop
           sudo -n docker compose --profile on-demand build anki-importer

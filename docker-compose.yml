@@ -1,6 +1,6 @@
 services:
   anki-desktop:
-    image: chrislongros/anki-desktop:latest
+    build: ./anki
     container_name: anki-desktop
     ports:
       - "3000:3000"
