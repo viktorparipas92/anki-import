@@ -120,16 +120,11 @@ ssh <USERNAME>@<NAS_IP_ADDRESS> -p 23232
 ```
 
 ### Add the public key to the server — from your own machine
-The deploy authenticates with a key, since it cannot type a password. Make a
-dedicated one rather than reusing a personal key.
-
-Run these on your own machine, **not** over SSH on the NAS — `ssh-copy-id` pushes
-the key from here to there. Log out of the NAS first if you are still connected.
+Optional, for logging in without a password. The deploy does not need it, since it
+runs on the NAS itself.
 ```bash
-ssh-keygen -t ed25519 -f ~/.ssh/anki-nas-deploy -C anki-import-deploy -N ""
-ssh-copy-id -p 23232 -i ~/.ssh/anki-nas-deploy.pub <USERNAME>@<NAS_IP_ADDRESS>
+ssh-copy-id -p 23232 -i ~/.ssh/id_ed25519.pub <USERNAME>@<NAS_IP_ADDRESS>
 ```
-`~/.ssh/anki-nas-deploy` is then the `SSH_PRIVATE_KEY` secret below.
 - Set up file permissions
 ```bash
 chmod 700 /var/services/homes/<USERNAME>/.ssh
@@ -190,8 +185,6 @@ these repository secrets under **Settings** > **Secrets and variables** >
 
 | Secret | Value |
 | --- | --- |
-| `SSH_PRIVATE_KEY` | contents of `~/.ssh/anki-nas-deploy`, the file without `.pub` |
-| `NAS_HOST`, `NAS_USERNAME`, `NAS_SSH_PORT` | where to deploy, e.g. `23232` for the port |
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | the whole service account JSON file |
 
 And these repository variables, on the same page:

@@ -11,8 +11,6 @@ concurrency:
 
 env:
   NAS_PATH: /volume1/docker/anki-import
-  NAS: ${{ secrets.NAS_USERNAME }}@${{ secrets.NAS_HOST }}
-  SSH_PORT: ${{ secrets.NAS_SSH_PORT }}
 
 jobs:
   deploy:
@@ -22,33 +20,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # DSM has no ssh-agent, so the key goes in a file that ssh -i can read.
-      - name: Write the deploy key
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      # The runner is on the NAS, so this is a local copy out of its workspace
+      # into the directory Task Scheduler and Compose use. secrets/ and .env stay
+      # untouched, as they are not in the repository.
+      - name: Copy the checkout to the deploy directory
         run: |
-          install -m 600 /dev/null "$RUNNER_TEMP/deploy_key"
-          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/deploy_key"
-          echo "SSH_KEY=$RUNNER_TEMP/deploy_key" >> "$GITHUB_ENV"
-          echo "SSH_OPTS=-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts" >> "$GITHUB_ENV"
-
-      # secrets/ and .env are not in the repository, so they are left as they are
-      # on the NAS.
-      - name: Copy the repository to the NAS
-        run: |
-          SSH="ssh -i $SSH_KEY -p $SSH_PORT $SSH_OPTS"
-          $SSH "$NAS" "mkdir -p '$NAS_PATH'"
-          rsync -avz \
-            --exclude '.git' \
-            --exclude '.github' \
-            --exclude '.venv' \
-            --exclude '.cache' \
-            --exclude '__pycache__' \
-            --exclude '.idea' \
-            --exclude '.env' \
-            --exclude 'secrets' \
-            -e "$SSH" \
-            ./ "$NAS:$NAS_PATH/"
+          mkdir -p "$NAS_PATH"
+          tar -cf - --exclude=./.git --exclude=./.github . | tar -xf - -C "$NAS_PATH"
 
       - name: Write the service account key
         env:
@@ -58,12 +36,9 @@ jobs:
             echo 'GOOGLE_SERVICE_ACCOUNT_JSON is not set, keeping the key already on the NAS.'
             exit 0
           fi
-          printf '%s' "$SERVICE_ACCOUNT_JSON" | ssh -i "$SSH_KEY" -p "$SSH_PORT" $SSH_OPTS "$NAS" "
-            set -e
-            mkdir -p '$NAS_PATH/secrets'
-            cat > '$NAS_PATH/secrets/service-account.json'
-            chmod 600 '$NAS_PATH/secrets/service-account.json'
-          "
+          mkdir -p "$NAS_PATH/secrets"
+          install -m 600 /dev/null "$NAS_PATH/secrets/service-account.json"
+          printf '%s' "$SERVICE_ACCOUNT_JSON" > "$NAS_PATH/secrets/service-account.json"
 
       - name: Write .env
         env:
@@ -78,16 +53,12 @@ jobs:
             echo "SERVICE_ACCOUNT_FILE=secrets/service-account.json"
             echo "LATEST_FRENCH_DECK=$LATEST_FRENCH_DECK"
             echo "TZ=${NAS_TZ:-UTC}"
-          } > env.deploy
-          scp -i "$SSH_KEY" -P "$SSH_PORT" $SSH_OPTS env.deploy "$NAS:$NAS_PATH/.env"
+          } > "$NAS_PATH/.env"
 
       # sudo -n fails fast instead of hanging on a password prompt, so the NAS user
       # needs NOPASSWD for docker in /etc/sudoers.
       - name: Start Anki and rebuild the importer
         run: |
-          ssh -i "$SSH_KEY" -p "$SSH_PORT" $SSH_OPTS "$NAS" "
-            set -e
-            cd '$NAS_PATH'
-            sudo -n docker compose up -d anki-desktop
-            sudo -n docker compose --profile on-demand build anki-importer
-          "
+          cd "$NAS_PATH"
+          sudo -n docker compose up -d anki-desktop
+          sudo -n docker compose --profile on-demand build anki-importer
