@@ -87,7 +87,8 @@ def update_cells(
     if not cells:
         return 0
 
-    quoted_sheet_name = "'{}'".format(sheet_name.replace("'", "''"))
+    escaped_sheet_name = sheet_name.replace("'", "''")
+    quoted_sheet_name = f"'{escaped_sheet_name}'"
     data = [
         {
             'range': f'{quoted_sheet_name}!{get_column_letter(column)}{row}',
@@ -143,3 +144,25 @@ def write_to_csv(values: list, filename: str):
     with open(filename, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerows(values)
+
+
+def append_rows(
+    service: 'googleapiclient.discovery.Resource',
+    spreadsheet_id: str,
+    sheet_name: str,
+    rows: list[list[str]],
+) -> int:
+    """Add rows after the last used row of a sheet and return how many landed."""
+    if not rows:
+        return 0
+
+    escaped_sheet_name = sheet_name.replace("'", "''")
+    quoted_sheet_name = f"'{escaped_sheet_name}'"
+    response = service.spreadsheets().values().append(
+        spreadsheetId=spreadsheet_id,
+        range=f'{quoted_sheet_name}!A:A',
+        valueInputOption='RAW',
+        insertDataOption='INSERT_ROWS',
+        body={'values': rows},
+    ).execute()
+    return response.get('updates', {}).get('updatedRows', 0)
