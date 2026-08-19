@@ -100,12 +100,43 @@ def import_csv_to_anki(filename: str, deck_name: str | None = None):
         print('Checking if new notes can be added...')
         json_response = make_anki_request('canAddNotes', params={'notes': notes_to_add})
         can_add: list[bool] = json_response['result']
-        if False in can_add:
-            duplicate_notes = [n for n, ok in zip(notes_to_add, can_add) if not ok]
-            raise ValueError(f'Cannot add the following notes: {[n["fields"] for n in duplicate_notes]}')
+        rejected = [n for n, ok in zip(notes_to_add, can_add) if not ok]
+        notes_to_add = [n for n, ok in zip(notes_to_add, can_add) if ok]
+        if rejected:
+            report_rejected_notes(rejected, unique_field)
 
-        print('Adding new notes...')
+        print(f'Adding {len(notes_to_add)} new notes...')
         make_anki_request('addNotes', params={'notes': notes_to_add})
+
+
+def report_rejected_notes(notes: list[dict], unique_field: str):
+    """Say which notes Anki refused, and where the note blocking each one lives."""
+    print(
+        f'{len(notes)} notes skipped, because a note of this type already has the '
+        f'same {unique_field} in another deck:'
+    )
+    for note in notes:
+        unique_value = note['fields'][unique_field]
+        print(f'  {unique_value} -> {", ".join(_locate_note(note, unique_value))}')
+
+
+def _locate_note(note: dict, unique_value: str) -> list[str]:
+    query = f'"note:{note["modelName"]}" "{unique_value}"'
+    note_ids = make_anki_request('findNotes', params={'query': query})['result']
+    if not note_ids:
+        return ['already in the collection']
+
+    cards = make_anki_request(
+        'cardsInfo',
+        params={'cards': [
+            card
+            for info in make_anki_request(
+                'notesInfo', params={'notes': note_ids}
+            )['result']
+            for card in info['cards'][:1]
+        ]},
+    )['result']
+    return sorted({card['deckName'] for card in cards}) or ['already in the collection']
 
 
 def fetch_existing_notes(deck_name: str, unique_field: str) -> dict[str, dict]:
