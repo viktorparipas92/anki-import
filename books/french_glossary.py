@@ -40,7 +40,6 @@ FRENCH_WORD_TYPES_BY_ABBREVIATION = {
     'loc.adj': ('loc adj', ''),
     'loc.prep': ('loc prep', ''),
     'loc.conj': ('loc conj', ''),
-    # Categories the book's legend leaves out, and the shapes OCR reads them as.
     'n.pr': ('n', ''),
     'n.m.ou.f': ('n', 'mf'),
     'n.f.ou.m': ('n', 'mf'),
@@ -65,11 +64,9 @@ PAGE_NUMBERS_PATTERN = re.compile(r'(?:\d{1,3}\s*[,;]?\s*)+$')
 LEADING_PAGE_NUMBERS_PATTERN = re.compile(r'^(?:\d{1,3}\s*[,;]\s*)+')
 TRAILING_GROUP_PATTERN = re.compile(r'\(([^()]*)\)\s*$')
 UNOPENED_GROUP_PATTERN = re.compile(r'\s([^()]*)\)\s*$')
-# The pronoun marking a reflexive verb is also an adjective's feminine ending,
-# so only a verb is ever read as reflexive.
 REFLEXIVE_WORD_TYPE = ('v', 'refl')
 REFLEXIVE_PATTERN = re.compile(r'\(\s*s[\'’]?e?\s*\)')
-REFLEXIVE_WORD_TYPES = (('v', ''), ('', ''))
+WORD_TYPES_THAT_CAN_BE_REFLEXIVE = (('v', ''), ('', ''))
 FEMININE_FORM_PATTERN = re.compile(r'\s*\([^()]*\)\s*$')
 FOOTER_CHARACTERS = '•·'
 LETTERS_PATTERN = re.compile(r'[a-zà-öø-ÿ]', re.IGNORECASE)
@@ -342,7 +339,7 @@ def _parse_entry(line: str) -> list[Entry]:
     word = word.replace(FAMILIAR_MARKER, '').strip()
 
     reflexive = REFLEXIVE_PATTERN.search(word)
-    is_verb = all(word_type in REFLEXIVE_WORD_TYPES for word_type in word_types)
+    is_verb = all(word_type in WORD_TYPES_THAT_CAN_BE_REFLEXIVE for word_type in word_types)
     if reflexive is not None and is_verb:
         word = _write_reflexive(word, reflexive.group())
         word_types = [REFLEXIVE_WORD_TYPE]

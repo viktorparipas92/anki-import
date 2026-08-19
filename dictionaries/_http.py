@@ -66,6 +66,34 @@ def get_json(url: str, params: dict[str, str] | None = None) -> dict | None:
     return None
 
 
+def get_text(url: str, headers: dict[str, str] | None = None) -> str | None:
+    """Fetch a document as text, returning None if it is missing or keeps failing."""
+    request = urllib.request.Request(
+        url, headers={'User-Agent': settings.USER_AGENT, **(headers or {})}
+    )
+    host = urllib.parse.urlsplit(url).netloc
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        _throttle(host)
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                charset = response.headers.get_content_charset() or 'utf-8'
+                return response.read().decode(charset, 'replace')
+        except urllib.error.HTTPError as error:
+            if error.code == 404:
+                return None
+            if error.code not in RETRY_STATUS_CODES or attempt == MAX_ATTEMPTS:
+                print(f'  ! {url} failed: HTTP {error.code}')
+                return None
+        except (urllib.error.URLError, TimeoutError) as error:
+            if attempt == MAX_ATTEMPTS:
+                print(f'  ! {url} failed: {error}')
+                return None
+
+        time.sleep(2 ** attempt)
+
+    return None
+
+
 def _throttle(host: str):
     previous = _last_request_at.get(host)
     if previous is not None:

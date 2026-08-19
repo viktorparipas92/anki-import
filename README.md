@@ -36,7 +36,7 @@ packages are importable.
 
 The code is organised as:
 - `anki_actions/` — modules that talk to Anki (`sync`, `create_deck`, `import_csv_to_anki`, `get_deck_id`, `get_model_id`).
-- `dictionaries/` — dictionary clients (`svensk_ordbok`, `wiktionary`).
+- `dictionaries/` — dictionary clients (`svensk_ordbok`, `wiktionary`, `wordreference`).
 - `books/` — the French book's glossary (`french_glossary`) and the OCR that reads its scanned pages.
 - `scripts/` — entry points (`update_all_decks`, `download_and_import`, `fill_translations`, `import_french_glossary`).
 - `anki_requests.py`, `settings.py`, `sheets.py`, `fill_translations.py`, `decks.py` — shared logic, config and data at the root.
@@ -55,42 +55,24 @@ python -m scripts.download_and_import ITA "Nouns - Translation"
 ```
 
 ### Fill in missing translations
-Fills the empty cells of a sheet from Svensk ordbok and English Wiktionary.
-Cells that already have a value are never changed. Needs edit access to the
-spreadsheet.
+Fills empty cells only. Swedish from Svensk ordbok and Wiktionary, French, Spanish
+and Italian from WordReference.
 
 ```bash
-python -m scripts.fill_translations <Mixed|FRA|ESP|ITA|SWE> <sheet_name> [--dry-run]
-```
-
-#### Examples
-```bash
-python -m scripts.fill_translations SWE Input --dry-run
+python -m scripts.fill_translations FRA Collection --dry-run
+python -m scripts.fill_translations FRA Collection
 python -m scripts.fill_translations SWE Input
 ```
 
-`Article`, `Type`, `Category`, `Usage` and `English` are filled by default; ask
-for `Etymology` or `Pronunciation` with `--columns`. See `--help` for the rest.
+`--columns`, `--language` and `--no-prompt` are Swedish only.
 
 ### Add the French book's glossary to the Collection sheet
-Adds every word from the index of *Vocabulaire Progressif du Français* that the
-`Collection` sheet does not have yet, at the bottom, to be sorted by hand
-afterwards. Existing rows are never touched. Needs edit access to the spreadsheet.
+Adds words from the index of *Vocabulaire Progressif du Français* that `Collection`
+lacks. The book is a scan, so OCR is needed: `pip install -r requirements-ocr.txt`.
 
 ```bash
 python -m scripts.import_french_glossary <path to the PDF> --from p --dry-run
 python -m scripts.import_french_glossary <path to the PDF> --from p
-```
-
-`--from` starts partway through the alphabet. A new word gets its `Word type`, a
-noun's gender as `Word subtype`, `fam` where the book stars the word, and the
-`--chapter` and `--tag` given on the command line; the rest is left to fill in by
-hand, as are the few words OCR mangles, which are listed and left out.
-
-The book is a scan, so its pages are read with the OCR built into macOS. Those
-dependencies are macOS only and therefore kept out of `requirements.txt`:
-```bash
-pip install -r requirements-ocr.txt
 ```
 
 ### Import everything, then sync
