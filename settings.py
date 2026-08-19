@@ -21,5 +21,7 @@ SPREADSHEETS = {
 USER_AGENT = 'anki-import/1.0 (personal Anki deck builder)'
 SVENSK_ORDBOK_API_URL = 'https://svenska.se/api'
 WIKTIONARY_API_URL = 'https://en.wiktionary.org/w/api.php'
+WORDREFERENCE_URL = 'https://www.wordreference.com'
 DICTIONARY_CACHE_DIR = '.cache'
 DICTIONARY_REQUEST_INTERVAL = 0.5
+

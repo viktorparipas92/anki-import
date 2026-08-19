@@ -2,7 +2,8 @@ import argparse
 import sys
 
 import settings
-from dictionaries import _http, svensk_ordbok
+import sheets
+from dictionaries import _http, svensk_ordbok, wordreference
 from fill_translations import (
     DEFAULT_COLUMNS,
     FILLABLE_COLUMNS,
@@ -10,6 +11,12 @@ from fill_translations import (
     fill_translations,
     skip_ambiguous_word,
 )
+
+SWEDISH_ONLY_ARGUMENTS = ('--columns', '--language', '--no-prompt')
+TRANSLATION_COLUMN = 'English'
+WORDREFERENCE_HEADWORD_COLUMNS = ('French', 'Spanish', 'Italian')
+WORD_TYPE_COLUMN = 'Word type'
+WORD_SUBTYPE_COLUMN = 'Word subtype'
 
 
 def choose_entry(
@@ -34,8 +41,9 @@ def parse_arguments() -> argparse.Namespace:
     """Read the command line arguments."""
     parser = argparse.ArgumentParser(
         description=(
-            'Fill the empty cells in a vocabulary sheet from Svensk ordbok and '
-            'Wiktionary. Cells that already have a value are never changed.'
+            'Fill the empty cells in a vocabulary sheet. Swedish is looked up in '
+            'Svensk ordbok and Wiktionary; French, Spanish and Italian in '
+            'WordReference. Cells that already have a value are never changed.'
         )
     )
     parser.add_argument(
@@ -50,13 +58,14 @@ def parse_arguments() -> argparse.Namespace:
         '--columns',
         nargs='+',
         choices=FILLABLE_COLUMNS,
-        default=list(DEFAULT_COLUMNS),
-        help='Columns to fill (default: %(default)s)',
+        help=f'Swedish only. Columns to fill (default: {list(DEFAULT_COLUMNS)})',
     )
     parser.add_argument(
         '--language',
-        default=LANGUAGE,
-        help='The Wiktionary language section to translate from (default: %(default)s)',
+        help=(
+            'Swedish only. The Wiktionary language section to translate from '
+            f'(default: {LANGUAGE})'
+        ),
     )
     parser.add_argument(
         '--dry-run',
@@ -69,7 +78,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         '--no-prompt',
         action='store_true',
-        help='Skip ambiguous words instead of asking which article to use',
+        help='Swedish only. Skip ambiguous words instead of asking which article to use',
     )
     parser.add_argument(
         '--no-cache',
@@ -97,20 +106,80 @@ def _describe_entry(entry: svensk_ordbok.Entry) -> str:
     return f'{label}: {definitions}' if definitions else label
 
 
+def get_wordreference_values(
+    word: str, row: dict[str, str], language_key: str
+) -> dict[str, str]:
+    """Look a row's word up and say which of its cells WordReference can fill."""
+    translation = wordreference.translate(
+        word,
+        language_key,
+        row.get(WORD_TYPE_COLUMN, ''),
+        row.get(WORD_SUBTYPE_COLUMN, ''),
+    )
+    return {
+        TRANSLATION_COLUMN: translation.english,
+        WORD_SUBTYPE_COLUMN: translation.word_subtype,
+    }
+
+
+def print_translations(
+    fills: list[sheets.Fill], missing: list[str], dry_run: bool
+):
+    """Show what WordReference confirmed, and the words it confirmed nothing for."""
+    print(f'\n{len(fills)} translations found.')
+    if missing:
+        print(f'{len(missing)} words left empty, fill these in by hand:')
+        for headword in missing:
+            print(f'  {headword}')
+
+    if dry_run and fills:
+        print('\nDry run: nothing written. Re-run without --dry-run to apply.')
+
+
+def _get_unusable_arguments(arguments: argparse.Namespace) -> list[str]:
+    given = {
+        '--columns': arguments.columns is not None,
+        '--language': arguments.language is not None,
+        '--no-prompt': arguments.no_prompt,
+    }
+    return [name for name in SWEDISH_ONLY_ARGUMENTS if given[name]]
+
+
 if __name__ == '__main__':
     arguments = parse_arguments()
     _http.use_cache = not arguments.no_cache
-    can_prompt = not arguments.no_prompt and sys.stdin.isatty()
     try:
-        fill_translations(
-            arguments.spreadsheet,
-            arguments.sheet,
-            column_names=tuple(arguments.columns),
-            language=arguments.language,
-            disambiguate=choose_entry if can_prompt else skip_ambiguous_word,
-            dry_run=arguments.dry_run,
-            limit=arguments.limit,
-        )
+        if arguments.spreadsheet in wordreference.LANGUAGE_CODES:
+            unusable = _get_unusable_arguments(arguments)
+            if unusable:
+                raise ValueError(
+                    f'{", ".join(unusable)} only applies to Swedish, not to '
+                    f'{arguments.spreadsheet}.'
+                )
+
+            fills, missing = sheets.fill_columns(
+                arguments.spreadsheet,
+                arguments.sheet,
+                TRANSLATION_COLUMN,
+                lambda word, row: get_wordreference_values(
+                    word, row, arguments.spreadsheet
+                ),
+                WORDREFERENCE_HEADWORD_COLUMNS,
+                dry_run=arguments.dry_run,
+                limit=arguments.limit,
+            )
+            print_translations(fills, missing, arguments.dry_run)
+        else:
+            can_prompt = not arguments.no_prompt and sys.stdin.isatty()
+            fill_translations(
+                arguments.spreadsheet,
+                arguments.sheet,
+                column_names=tuple(arguments.columns or DEFAULT_COLUMNS),
+                language=arguments.language or LANGUAGE,
+                disambiguate=choose_entry if can_prompt else skip_ambiguous_word,
+                dry_run=arguments.dry_run,
+                limit=arguments.limit,
+            )
     except ValueError as error:
         print(error)
         sys.exit(1)
