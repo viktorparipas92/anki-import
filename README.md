@@ -37,7 +37,8 @@ packages are importable.
 The code is organised as:
 - `anki_actions/` — modules that talk to Anki (`sync`, `create_deck`, `import_csv_to_anki`, `get_deck_id`, `get_model_id`).
 - `dictionaries/` — dictionary clients (`svensk_ordbok`, `wiktionary`).
-- `scripts/` — entry points (`update_all_decks`, `download_and_import`, `fill_translations`).
+- `books/` — the French book's glossary (`french_glossary`) and the OCR that reads its scanned pages.
+- `scripts/` — entry points (`update_all_decks`, `download_and_import`, `fill_translations`, `import_french_glossary`).
 - `anki_requests.py`, `settings.py`, `sheets.py`, `fill_translations.py`, `decks.py` — shared logic, config and data at the root.
 
 ### Import a single sheet
@@ -70,6 +71,27 @@ python -m scripts.fill_translations SWE Input
 
 `Article`, `Type`, `Category`, `Usage` and `English` are filled by default; ask
 for `Etymology` or `Pronunciation` with `--columns`. See `--help` for the rest.
+
+### Add the French book's glossary to the Collection sheet
+Adds every word from the index of *Vocabulaire Progressif du Français* that the
+`Collection` sheet does not have yet, at the bottom, to be sorted by hand
+afterwards. Existing rows are never touched. Needs edit access to the spreadsheet.
+
+```bash
+python -m scripts.import_french_glossary <path to the PDF> --from p --dry-run
+python -m scripts.import_french_glossary <path to the PDF> --from p
+```
+
+`--from` starts partway through the alphabet. A new word gets its `Word type`, a
+noun's gender as `Word subtype`, `fam` where the book stars the word, and the
+`--chapter` and `--tag` given on the command line; the rest is left to fill in by
+hand, as are the few words OCR mangles, which are listed and left out.
+
+The book is a scan, so its pages are read with the OCR built into macOS. Those
+dependencies are macOS only and therefore kept out of `requirements.txt`:
+```bash
+pip install -r requirements-ocr.txt
+```
 
 ### Import everything, then sync
 `update_all_decks` opens Anki if needed and imports every configured sheet.

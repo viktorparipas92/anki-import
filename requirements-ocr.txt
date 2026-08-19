@@ -1,0 +1,7 @@
+# Reading a scanned book needs the OCR built into macOS, so these are macOS
+# only and kept out of requirements.txt, which also builds the Linux image.
+pyobjc-core==12.2.2
+pyobjc-framework-Cocoa==12.2.2
+pyobjc-framework-CoreML==12.2.2
+pyobjc-framework-Quartz==12.2.2
+pyobjc-framework-Vision==12.2.2
