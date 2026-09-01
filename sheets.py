@@ -85,7 +85,7 @@ def update_cells(
     service: 'googleapiclient.discovery.Resource',
     spreadsheet_id: str,
     sheet_name: str,
-    cells: list[tuple[int, int, str]],
+    cells: list[tuple[int, int, str | int]],
 ) -> int:
     """Write cells given as (row number, column index, value), touching no others."""
     if not cells:
@@ -154,7 +154,7 @@ def append_rows(
     service: 'googleapiclient.discovery.Resource',
     spreadsheet_id: str,
     sheet_name: str,
-    rows: list[list[str]],
+    rows: list[list[str | int]],
 ) -> int:
     """Add rows after the last used row of a sheet and return how many landed."""
     if not rows:

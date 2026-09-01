@@ -46,6 +46,7 @@ def parse_arguments() -> argparse.Namespace:
     )
     parser.add_argument(
         '--chapter',
+        type=int,
         default=DEFAULT_CHAPTER,
         help='The chapter to file the new words under (default: %(default)s)',
     )

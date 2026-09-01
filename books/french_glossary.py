@@ -14,7 +14,7 @@ from books import _ocr
 
 FRENCH_COLUMN = 'French'
 WORD_TYPE_COLUMN = 'Word type'
-DEFAULT_CHAPTER = '26'
+DEFAULT_CHAPTER = 26
 DEFAULT_TAG = 'A2-B1'
 
 FRENCH_WORD_TYPES_BY_ABBREVIATION = {
@@ -107,7 +107,9 @@ class Entry:
         """Every key this word could already be in the sheet under."""
         return variants(self.word)
 
-    def to_row(self, header: list[str], chapter: str, tag: str) -> list[str]:
+    def to_row(
+        self, header: list[str], chapter: int, tag: str
+    ) -> list[str | int]:
         """Lay the entry out as a sheet row, in the header's column order."""
         values_by_column_name = {
             FRENCH_COLUMN: self.word,
@@ -212,7 +214,7 @@ def import_french_glossary(
     sheet_name: str,
     start_from: str = '',
     through_page: int | None = None,
-    chapter: str = DEFAULT_CHAPTER,
+    chapter: int = DEFAULT_CHAPTER,
     tag: str = DEFAULT_TAG,
     pages: str = '',
     dry_run: bool = False,
