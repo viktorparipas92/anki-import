@@ -5,6 +5,8 @@ from anki_requests import make_anki_request
 from anki_actions.create_deck import create_deck
 from decks import DECKS
 
+NO_DUPLICATE_FOUND = 'no note of this type has it; check that the deck exists'
+
 
 def get_deck_data(filename: str) -> tuple[str, list[str], str, str, str]:
     try:
@@ -67,12 +69,12 @@ def import_csv_to_anki(filename: str, deck_name: str | None = None):
     Perform a bulk import of notes into Anki, updating existing notes or adding new ones.
     """
     deck_name_from_data, field_names, model_name, unique_field, deck_id = get_deck_data(filename)
-    if deck_id is None:
-        create_deck(deck_name_from_data)
-
     deck_name = (
         f'{deck_name_from_data}::{deck_name}' if deck_name else deck_name_from_data
     )
+    if deck_id is None or deck_name != deck_name_from_data:
+        create_deck(deck_name)
+
     notes_to_import = extract_notes(filename, deck_name, field_names, model_name)
     notes_to_import = check_for_duplicates(notes_to_import, unique_field)
     existing_notes = fetch_existing_notes(deck_name, unique_field)
@@ -110,33 +112,35 @@ def import_csv_to_anki(filename: str, deck_name: str | None = None):
 
 
 def report_rejected_notes(notes: list[dict], unique_field: str):
-    """Say which notes Anki refused, and where the note blocking each one lives."""
-    print(
-        f'{len(notes)} notes skipped, because a note of this type already has the '
-        f'same {unique_field} in another deck:'
-    )
+    """Say which notes Anki refused, and why, as far as the collection tells us."""
+    print(f'{len(notes)} notes skipped, because Anki refused to add them:')
     for note in notes:
         unique_value = note['fields'][unique_field]
-        print(f'  {unique_value} -> {", ".join(_locate_note(note, unique_value))}')
+        deck_names = _find_duplicates(note, unique_field, unique_value)
+        if deck_names:
+            decks = ', '.join(deck_names)
+            reason = f'same {unique_field} in {decks}'
+        else:
+            reason = NO_DUPLICATE_FOUND
+
+        print(f'  {unique_value} -> {reason}')
 
 
-def _locate_note(note: dict, unique_value: str) -> list[str]:
-    query = f'"note:{note["modelName"]}" "{unique_value}"'
+def _find_duplicates(note: dict, unique_field: str, unique_value: str) -> list[str]:
+    """Name the decks holding a note of this type with the same unique field."""
+    escaped_value = unique_value.replace('\\', '\\\\').replace('"', '\\"')
+    query = f'"note:{note["modelName"]}" "{unique_field}:{escaped_value}"'
     note_ids = make_anki_request('findNotes', params={'query': query})['result']
     if not note_ids:
-        return ['already in the collection']
+        return []
 
-    cards = make_anki_request(
-        'cardsInfo',
-        params={'cards': [
-            card
-            for info in make_anki_request(
-                'notesInfo', params={'notes': note_ids}
-            )['result']
-            for card in info['cards'][:1]
-        ]},
-    )['result']
-    return sorted({card['deckName'] for card in cards}) or ['already in the collection']
+    notes_info = make_anki_request('notesInfo', params={'notes': note_ids})['result']
+    card_ids = [info['cards'][0] for info in notes_info if info['cards']]
+    if not card_ids:
+        return []
+
+    cards = make_anki_request('cardsInfo', params={'cards': card_ids})['result']
+    return sorted({card['deckName'] for card in cards})
 
 
 def fetch_existing_notes(deck_name: str, unique_field: str) -> dict[str, dict]:
