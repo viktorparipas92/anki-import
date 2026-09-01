@@ -75,6 +75,10 @@ python -m scripts.import_french_glossary <path to the PDF> --from p --dry-run
 python -m scripts.import_french_glossary <path to the PDF> --from p
 ```
 
+```bash
+python -m scripts.import_french_glossary <path to the PDF> --pages 187-208 --through-page 11 --dry-run
+```
+
 ### Import everything, then sync
 `update_all_decks` opens Anki if needed and imports every configured sheet.
 ```bash

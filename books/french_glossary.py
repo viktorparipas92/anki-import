@@ -52,6 +52,9 @@ FRENCH_WORD_TYPES_BY_ABBREVIATION = {
     'adi': ('adj', ''),
     'ad.invar': ('adj', 'inv'),
     'adi.invar': ('adj', 'inv'),
+    'p.p': ('adj', ''),
+    'p.pr': ('adj', ''),
+    'pr.indef': ('pron', ''),
     'n.t': ('n', 'f'),
     'en.m': ('n', 'm'),
     'en.f': ('n', 'f'),
@@ -60,7 +63,8 @@ FRENCH_WORD_TYPES_BY_ABBREVIATION = {
 FAMILIAR_MARKER = '*'
 FAMILIARITY = 'fam'
 
-PAGE_NUMBERS_PATTERN = re.compile(r'(?:\d{1,3}\s*[,;]?\s*)+$')
+PAGE_NUMBERS_PATTERN = re.compile(r'(?<!\d)(?:\d{1,3}(?:\s*[,;]\s*|\s+))*\d{1,3}\s*[,;]?\s*$')
+COLUMN_PATTERN = re.compile(r'.+?\([^()]*\)\s*\d[\d\s,;]*')
 LEADING_PAGE_NUMBERS_PATTERN = re.compile(r'^(?:\d{1,3}\s*[,;]\s*)+')
 TRAILING_GROUP_PATTERN = re.compile(r'\(([^()]*)\)\s*$')
 UNOPENED_GROUP_PATTERN = re.compile(r'\s([^()]*)\)\s*$')
@@ -197,7 +201,7 @@ def read_french_glossary(pdf_path: str, pages: str = '') -> list[Entry]:
     entries = []
     for text in texts:
         for line in text.splitlines():
-            entries.extend(_parse_entry(line))
+            entries.extend(_parse_line(line))
 
     return entries
 
@@ -207,6 +211,7 @@ def import_french_glossary(
     spreadsheet_key: str,
     sheet_name: str,
     start_from: str = '',
+    through_page: int | None = None,
     chapter: str = DEFAULT_CHAPTER,
     tag: str = DEFAULT_TAG,
     pages: str = '',
@@ -227,6 +232,14 @@ def import_french_glossary(
         cutoff = sort_key(start_from)
         considered = [entry for entry in considered if sort_key(entry.word) >= cutoff]
         print(f'{len(considered)} of them at or after "{start_from}"')
+
+    if through_page is not None:
+        considered = [
+            entry
+            for entry in considered
+            if any(number <= through_page for number in entry.page_numbers)
+        ]
+        print(f'{len(considered)} of them printed on page {through_page} or before')
 
     scopes = settings.SCOPES if dry_run else settings.WRITE_SCOPES
     service = sheets.build_service(scopes)
@@ -316,11 +329,26 @@ def _count_entries(text: str, minimum: int = 5) -> int:
     """Return how many lines of a page are glossary entries, up to `minimum`."""
     num_entries = 0
     for line in text.splitlines():
-        num_entries += len(_parse_entry(line))
+        num_entries += len(_parse_line(line))
         if num_entries >= minimum:
             return num_entries
 
     return 0
+
+
+def _parse_line(line: str) -> list[Entry]:
+    """Read one line of an index, which may print several entries side by side."""
+    entries = []
+    for part in _split_columns(line):
+        entries.extend(_parse_entry(part))
+
+    return entries
+
+
+def _split_columns(line: str) -> list[str]:
+    """Split a line the book sets in columns into the entries standing on it."""
+    parts = [match.group() for match in COLUMN_PATTERN.finditer(line)]
+    return parts if len(parts) > 1 else [line]
 
 
 def _parse_entry(line: str) -> list[Entry]:

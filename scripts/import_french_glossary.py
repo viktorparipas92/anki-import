@@ -40,6 +40,11 @@ def parse_arguments() -> argparse.Namespace:
         help='Only consider words at or after this one, alphabetically',
     )
     parser.add_argument(
+        '--through-page',
+        type=int,
+        help='Only consider words the book prints on this page or an earlier one',
+    )
+    parser.add_argument(
         '--chapter',
         default=DEFAULT_CHAPTER,
         help='The chapter to file the new words under (default: %(default)s)',
@@ -74,6 +79,7 @@ if __name__ == '__main__':
             arguments.spreadsheet,
             arguments.sheet,
             start_from=arguments.start_from,
+            through_page=arguments.through_page,
             chapter=arguments.chapter,
             tag=arguments.tag,
             pages=arguments.pages,

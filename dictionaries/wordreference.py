@@ -40,6 +40,9 @@ MIN_LENGTH_TO_MATCH_INSIDE = 3
 FEMININE_SUFFIX_PATTERN = re.compile(r',\s*-\S+')
 OPTIONAL_PART_PATTERN = re.compile(r'[\[(]([^\])]*)[\])]')
 REFLEXIVE_PREFIX_PATTERN = re.compile(r"^(?:se\s+|s')", re.IGNORECASE)
+PRONUNCIATION_SELECTOR = '.pronWR'
+PRONUNCIATION_PATTERN = re.compile(r'\[([^\[\]]+)\]')
+VARIANT_SPELLING_PATTERN = re.compile(r',.*$')
 
 
 @dataclass(frozen=True)
@@ -48,6 +51,7 @@ class Translation:
 
     english: str = ''
     word_subtype: str = ''
+    pronunciation: str = ''
 
 
 @dataclass(frozen=True)
@@ -71,6 +75,7 @@ class Entry:
     headword: str
     boxes: tuple[Box, ...]
     reverse_words: frozenset[str]
+    pronunciation: str = ''
 
     def get_result(self, category: str = ANY_PART_OF_SPEECH) -> Translation:
         """The confirmed translations, by comma within a box, semicolon between."""
@@ -97,6 +102,7 @@ class Entry:
         return Translation(
             english='; '.join(confirmed),
             word_subtype=_get_verb_subtype(category, used_boxes),
+            pronunciation=self.pronunciation,
         )
 
 
@@ -190,7 +196,23 @@ def _look_up_form(form: str, language_key: str) -> Entry | None:
         headword=form,
         boxes=_parse_boxes(soup),
         reverse_words=_parse_reverse_words(soup, language_path),
+        pronunciation=_parse_pronunciation(soup),
     )
+
+
+def _parse_pronunciation(soup: BeautifulSoup) -> str:
+    """Read the word's IPA as the sheet writes it: bare, and the first form only."""
+    element = soup.select_one(PRONUNCIATION_SELECTOR)
+    if element is None:
+        return ''
+
+    text = element.get_text(' ', strip=True)
+    spellings = PRONUNCIATION_PATTERN.findall(text)
+    if not spellings:
+        return ''
+
+    base_form = VARIANT_SPELLING_PATTERN.sub('', spellings[0])
+    return _tidy(base_form)
 
 
 def _fetch(form: str, language_path: str) -> str | None:

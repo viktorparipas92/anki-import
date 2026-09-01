@@ -17,6 +17,7 @@ TRANSLATION_COLUMN = 'English'
 WORDREFERENCE_HEADWORD_COLUMNS = ('French', 'Spanish', 'Italian')
 WORD_TYPE_COLUMN = 'Word type'
 WORD_SUBTYPE_COLUMN = 'Word subtype'
+PRONUNCIATION_COLUMN = 'Pronunciation'
 
 
 def choose_entry(
@@ -119,6 +120,7 @@ def get_wordreference_values(
     return {
         TRANSLATION_COLUMN: translation.english,
         WORD_SUBTYPE_COLUMN: translation.word_subtype,
+        PRONUNCIATION_COLUMN: translation.pronunciation,
     }
 
 
