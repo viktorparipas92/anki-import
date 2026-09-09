@@ -14,10 +14,19 @@ from fill_translations import (
 
 SWEDISH_ONLY_ARGUMENTS = ('--columns', '--language', '--no-prompt')
 TRANSLATION_COLUMN = 'English'
-WORDREFERENCE_HEADWORD_COLUMNS = ('French', 'Spanish', 'Italian')
+PRONUNCIATION_COLUMN = 'Pronunciation'
+TRIGGER_COLUMNS = (TRANSLATION_COLUMN, PRONUNCIATION_COLUMN)
+WORDREFERENCE_HEADWORD_COLUMNS = (
+    'French', 'Spanish', 'Italian', 'Source', 'Source_pk'
+)
+WORD_TYPES_BY_SHEET_NAME = {
+    'Adjectives': 'adj',
+    'Nouns': 'n',
+    'Verbs': 'v',
+}
+SHEET_NAMES_BY_SPREADSHEET = {'ITA': ('Nouns', 'Adjectives', 'Verbs')}
 WORD_TYPE_COLUMN = 'Word type'
 WORD_SUBTYPE_COLUMN = 'Word subtype'
-PRONUNCIATION_COLUMN = 'Pronunciation'
 
 
 def choose_entry(
@@ -38,6 +47,29 @@ def choose_entry(
         print(f'  Enter a number between 1 and {len(entries)}, or nothing to skip.')
 
 
+def _describe_known_sheets() -> str:
+    descriptions = []
+    for spreadsheet_key, sheet_names in SHEET_NAMES_BY_SPREADSHEET.items():
+        joined = ', '.join(sheet_names)
+        descriptions.append(f'{spreadsheet_key} ({joined})')
+
+    return '; '.join(descriptions)
+
+
+def get_sheet_names(spreadsheet_key: str, sheet_name: str | None) -> tuple[str, ...]:
+    """Take the sheet asked for, or every sheet the spreadsheet is known to fill."""
+    if sheet_name:
+        return (sheet_name,)
+
+    sheet_names = SHEET_NAMES_BY_SPREADSHEET.get(spreadsheet_key)
+    if not sheet_names:
+        raise ValueError(
+            f'Name the sheet to fill. Only {_describe_known_sheets()} can be left out.'
+        )
+
+    return sheet_names
+
+
 def parse_arguments() -> argparse.Namespace:
     """Read the command line arguments."""
     parser = argparse.ArgumentParser(
@@ -54,7 +86,14 @@ def parse_arguments() -> argparse.Namespace:
             f'({"|".join(sorted(settings.SPREADSHEETS))}) or a spreadsheet title'
         ),
     )
-    parser.add_argument('sheet', help='The name of the sheet (tab) to fill')
+    parser.add_argument(
+        'sheet',
+        nargs='?',
+        help=(
+            'The name of the sheet (tab) to fill. Left out for a spreadsheet whose '
+            f'sheets are known: {_describe_known_sheets()}'
+        ),
+    )
     parser.add_argument(
         '--columns',
         nargs='+',
@@ -108,20 +147,28 @@ def _describe_entry(entry: svensk_ordbok.Entry) -> str:
 
 
 def get_wordreference_values(
-    word: str, row: dict[str, str], language_key: str
+    word: str, row: dict[str, str], language_key: str, sheet_name: str
 ) -> dict[str, str]:
     """Look a row's word up and say which of its cells WordReference can fill."""
+    word_type = _get_word_type(row, sheet_name)
+    word_subtype = row.get(WORD_SUBTYPE_COLUMN, '')
     translation = wordreference.translate(
-        word,
-        language_key,
-        row.get(WORD_TYPE_COLUMN, ''),
-        row.get(WORD_SUBTYPE_COLUMN, ''),
+        word, language_key, word_type, word_subtype
     )
     return {
         TRANSLATION_COLUMN: translation.english,
         WORD_SUBTYPE_COLUMN: translation.word_subtype,
         PRONUNCIATION_COLUMN: translation.pronunciation,
     }
+
+
+def _get_word_type(row: dict[str, str], sheet_name: str) -> str:
+    """Take the row's own word type, or the one the sheet's name implies."""
+    word_type = row.get(WORD_TYPE_COLUMN, '').strip()
+    if word_type:
+        return word_type
+
+    return WORD_TYPES_BY_SHEET_NAME.get(sheet_name, '')
 
 
 def print_translations(
@@ -159,19 +206,25 @@ if __name__ == '__main__':
                     f'{arguments.spreadsheet}.'
                 )
 
-            fills, missing = sheets.fill_columns(
-                arguments.spreadsheet,
-                arguments.sheet,
-                TRANSLATION_COLUMN,
-                lambda word, row: get_wordreference_values(
-                    word, row, arguments.spreadsheet
-                ),
-                WORDREFERENCE_HEADWORD_COLUMNS,
-                dry_run=arguments.dry_run,
-                limit=arguments.limit,
-            )
-            print_translations(fills, missing, arguments.dry_run)
+            sheet_names = get_sheet_names(arguments.spreadsheet, arguments.sheet)
+            for sheet_name in sheet_names:
+                print(f'\n=== {sheet_name} ===')
+                fills, missing = sheets.fill_columns(
+                    arguments.spreadsheet,
+                    sheet_name,
+                    TRIGGER_COLUMNS,
+                    lambda word, row, sheet=sheet_name: get_wordreference_values(
+                        word, row, arguments.spreadsheet, sheet
+                    ),
+                    WORDREFERENCE_HEADWORD_COLUMNS,
+                    dry_run=arguments.dry_run,
+                    limit=arguments.limit,
+                )
+                print_translations(fills, missing, arguments.dry_run)
         else:
+            if not arguments.sheet:
+                raise ValueError('Name the sheet to fill.')
+
             can_prompt = not arguments.no_prompt and sys.stdin.isatty()
             fill_translations(
                 arguments.spreadsheet,

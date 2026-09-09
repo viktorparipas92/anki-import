@@ -25,6 +25,8 @@ FEMININE_NOUN = 'nf'
 MASCULINE_NOUN = 'nm'
 NOUN_OF_EITHER_GENDER = 'n'
 ADJECTIVE = 'adj'
+ADJECTIVE_MARKERS = ('adj', 'agg')
+REFLEXIVE_MARKERS = ('pron', 'rif')
 VERB = 'v'
 REFLEXIVE_VERB = 'v pron'
 ANY_PART_OF_SPEECH = ''
@@ -315,10 +317,12 @@ def _get_category(part_of_speech: str) -> str:
 
         return NOUN_OF_EITHER_GENDER
 
-    if head.startswith(ADJECTIVE):
+    if head.startswith(ADJECTIVE_MARKERS):
         return ADJECTIVE
+
     if head.startswith(VERB):
-        return REFLEXIVE_VERB if 'pron' in words else VERB
+        is_reflexive_marker = any(word in REFLEXIVE_MARKERS for word in words)
+        return REFLEXIVE_VERB if is_reflexive_marker else VERB
 
     return ANY_PART_OF_SPEECH
 
