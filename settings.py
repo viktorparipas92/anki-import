@@ -1,5 +1,9 @@
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 ANKI_CONNECT_URL = os.environ.get('ANKI_CONNECT_URL', 'http://localhost:8765')
 ANKI_CONNECT_TIMEOUT = int(os.environ.get('ANKI_CONNECT_TIMEOUT', '30'))
 LATEST_FRENCH_DECK = os.environ.get('LATEST_FRENCH_DECK', '')
