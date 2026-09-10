@@ -35,11 +35,33 @@ Run all commands from the repository root, so the `scripts` and `anki_actions`
 packages are importable.
 
 The code is organised as:
-- `anki_actions/` — modules that talk to Anki (`sync`, `create_deck`, `import_csv_to_anki`, `get_deck_id`, `get_model_id`).
+- `anki_actions/` — modules that talk to Anki (`sync`, `create_deck`, `import_csv_to_anki`, `get_deck_id`, `get_model_id`, `model_templates`).
 - `dictionaries/` — dictionary clients (`svensk_ordbok`, `wiktionary`, `wordreference`).
 - `books/` — the French book's glossary (`french_glossary`) and the OCR that reads its scanned pages.
-- `scripts/` — entry points (`update_all_decks`, `download_and_import`, `fill_translations`, `import_french_glossary`).
-- `anki_requests.py`, `settings.py`, `sheets.py`, `fill_translations.py`, `decks.py` — shared logic, config and data at the root.
+- `scripts/` — entry points (`update_all_decks`, `download_and_import`, `fill_translations`, `import_french_glossary`, `export_models`, `import_models`).
+- `models/` — the card templates and styling of the versioned note types.
+- `anki_requests.py`, `settings.py`, `sheets.py`, `fill_translations.py`, `decks.py`, `model_files.py` — shared logic, config and data at the root.
+
+### Card templates and styling
+The note types in `model_files.VERSIONED_MODEL_NAMES` and the media files in
+`VERSIONED_MEDIA_FILENAMES` are mirrored in `models/`.
+
+Edit the styling in `models/media/_stylesheet.css` and the templates in
+`models/<note type>/<card>/`, then push them into Anki:
+```bash
+python -m scripts.import_models
+python -m scripts.import_models --write
+```
+Without `--write` it only prints the differences. Close the card templates window
+in Anki first, then sync to AnkiWeb afterwards to update the phone.
+
+After editing in the Anki GUI instead, pull the changes back into the repository:
+```bash
+python -m scripts.export_models
+```
+
+Never symlink a file into Anki's media folder. Anki does not sync symlinked media,
+so AnkiWeb treats the file as deleted and removes it from the phone.
 
 ### Import a single sheet
 ```bash

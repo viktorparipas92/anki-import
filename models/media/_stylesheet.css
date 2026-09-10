@@ -1,0 +1,25 @@
+.card {
+    font-family: "DIN Alternate";
+    font-size: 20px;
+    text-align: center;
+    color: black;
+    background-color: white;
+}
+
+.source-lang {
+    font-family: geneva, sans-serif, "Droid Sans";
+    font-size: 20px;
+    text-align: center;
+}
+
+.english {
+    font-family: baskerville, "Droid Serif";
+    font-size: 20px;
+    text-align: center;
+}
+
+.pronunciation {
+    font-family: "Lucida Grande", helvetica, sans-serif;
+    font-size: 16px;
+    text-align: center;
+}
