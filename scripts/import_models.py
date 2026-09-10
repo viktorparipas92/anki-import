@@ -6,7 +6,6 @@ from anki_actions.model_templates import get_model_styling, get_model_templates
 from anki_requests import wait_for_ankiconnect
 from model_files import (
     FILENAMES_BY_SIDE,
-    MEDIA_DIRECTORY,
     MODELS_DIRECTORY,
     VERSIONED_MEDIA_FILENAMES,
     VERSIONED_MODEL_NAMES,
@@ -47,7 +46,7 @@ def get_media_versions() -> list[tuple[str, str, str]]:
     versions = []
     for filename in VERSIONED_MEDIA_FILENAMES:
         anki_content, repository_content = read_media_versions(filename)
-        label = f'{MEDIA_DIRECTORY}/{filename}'
+        label = f'media/{filename}'
         versions.append((label, anki_content, repository_content))
 
     return versions

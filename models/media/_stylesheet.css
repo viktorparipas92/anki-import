@@ -23,3 +23,7 @@
     font-size: 16px;
     text-align: center;
 }
+
+.wr a {
+    font: 400 13.333px Arial, sans-serif;
+}

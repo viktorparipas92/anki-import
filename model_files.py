@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from anki_actions.model_templates import (
@@ -10,11 +11,17 @@ from anki_actions.model_templates import (
 
 MODELS_DIRECTORY = Path('models')
 MEDIA_DIRECTORY = MODELS_DIRECTORY / 'media'
+SNIPPETS_DIRECTORY = MODELS_DIRECTORY / 'snippets'
 STYLING_FILENAME = 'styling.css'
 FILENAMES_BY_SIDE = {'Front': 'front.html', 'Back': 'back.html'}
 
+INCLUDE_PATTERN = re.compile(r'<!-- include: ([\w-]+) -->')
+EXPANDED_PATTERN = re.compile(
+    r'<!-- ([\w-]+) start -->\n(.*?)\n<!-- \1 end -->', re.DOTALL
+)
+
 VERSIONED_MODEL_NAMES = ['French vocab']
-VERSIONED_MEDIA_FILENAMES = ['_stylesheet.css']
+VERSIONED_MEDIA_FILENAMES = ['_stylesheet.css', '_dictionary_links.js']
 
 
 def export_model(model_name: str):
@@ -97,10 +104,36 @@ def _read_media_file(path: Path) -> str:
     return path.read_text(encoding='utf-8')
 
 
+def _expand_includes(content: str) -> str:
+    """Replace every include with the snippet, as Anki has to store it."""
+    def expand(match: re.Match) -> str:
+        snippet_name = match.group(1)
+        path = SNIPPETS_DIRECTORY / f'{snippet_name}.html'
+        snippet = path.read_text(encoding='utf-8').rstrip('\n')
+        return (
+            f'<!-- {snippet_name} start -->\n'
+            f'{snippet}\n'
+            f'<!-- {snippet_name} end -->'
+        )
+
+    return INCLUDE_PATTERN.sub(expand, content)
+
+
+def _collapse_includes(content: str) -> str:
+    """Replace every expanded snippet with the include, as the repository keeps it."""
+    def collapse(match: re.Match) -> str:
+        snippet_name = match.group(1)
+        return f'<!-- include: {snippet_name} -->'
+
+    return EXPANDED_PATTERN.sub(collapse, content)
+
+
 def _write_file(path: Path, content: str):
-    path.write_text(content + '\n', encoding='utf-8')
+    collapsed = _collapse_includes(content)
+    path.write_text(collapsed + '\n', encoding='utf-8')
 
 
 def _read_file(path: Path) -> str:
     content = path.read_text(encoding='utf-8')
-    return content.rstrip('\n')
+    expanded = _expand_includes(content)
+    return expanded.rstrip('\n')
