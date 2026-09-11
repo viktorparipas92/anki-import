@@ -1,0 +1,45 @@
+{{FrontSide}}
+
+<hr id=answer>
+
+<div class="english">{{English}}</div>
+
+<div class="wr">
+  <a id="wr-link" target="_blank" href="#" aria-label="WordReference">
+		Link to WR
+	</a>
+</div>
+
+<div class="wikt">
+  <button type="button" id="wikt-btn" aria-label="Wiktionary">
+		Wiktionary &#9662;
+	</button>
+	<br>
+  <iframe id="wikt-frame" hidden></iframe>
+</div>
+
+<script>
+	(function () {
+		var word = document.getElementById('hw').textContent.trim();
+	
+		var language = "ES";  // hardcoded for now, swap for a field-based lookup later
+		if (language == "ES") {
+			var wrLangPair = "esen";     
+    		var wiktLang = "Spanish";
+		}
+
+    	var wrLink = document.getElementById('wr-link');
+    	wrLink.href = 'https://www.wordreference.com/' + wrLangPair + '/' + encodeURIComponent(word);
+
+    var wiktBtn = document.getElementById('wikt-btn'),
+        wiktFrame = document.getElementById('wikt-frame');
+
+    wiktBtn.addEventListener('click', function () {
+      if (!wiktFrame.src)
+        wiktFrame.src = 'https://en.wiktionary.org/wiki/' + encodeURIComponent(word) + '#' + wiktLang;
+
+      wiktFrame.hidden = !wiktFrame.hidden;
+      wiktBtn.classList.toggle('open', !wiktFrame.hidden);
+    });
+  })();
+</script>

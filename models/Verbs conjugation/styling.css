@@ -1,0 +1,12 @@
+@import url("_stylesheet.css");
+
+.conjugation {
+    font-family: "Bodoni 72";
+    font-size: 20px;
+    text-align: center;
+}
+
+
+table td {
+    padding: 5px;
+  }

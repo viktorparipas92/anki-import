@@ -1,0 +1,33 @@
+{{FrontSide}}
+
+<hr id=answer>
+
+<div class="source-lang">
+	{{Article}} <span id="hw">{{Origin}}</span>
+</div> {{Usage}}
+
+<div class="wikt">
+  <button type="button" id="wikt-btn" aria-label="Wiktionary">
+    Wiktionary &#9662;
+  </button>
+  <iframe id="wikt-frame" hidden></iframe>
+</div>
+
+<script>
+  (function () {
+    var word = document.getElementById('hw').textContent.trim();
+
+    var wiktLang = "German";
+
+    var wiktBtn = document.getElementById('wikt-btn'),
+        wiktFrame = document.getElementById('wikt-frame');
+
+    wiktBtn.addEventListener('click', function () {
+      if (!wiktFrame.src)
+        wiktFrame.src = 'https://en.wiktionary.org/wiki/' + encodeURIComponent(word) + '#' + wiktLang;
+
+      wiktFrame.hidden = !wiktFrame.hidden;
+      wiktBtn.classList.toggle('open', !wiktFrame.hidden);
+    });
+  })();
+</script>

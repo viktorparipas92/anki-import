@@ -1,0 +1,63 @@
+{{FrontSide}}
+
+<hr id=answer>
+
+<div class="source-lang">
+	{{Article_pk}} <span id="hw">{{Source_pk}}</span>
+</div>
+
+<div class="wr">
+  <a id="wr-link" target="_blank" href="#" aria-label="WordReference">
+		Link to WR
+	</a>
+</div>
+
+<div class="wikt">
+  <button type="button" id="wikt-btn" aria-label="Wiktionary">
+		Wiktionary &#9662;
+	</button>
+	<br>
+  <iframe id="wikt-frame" hidden></iframe>
+</div>
+
+<div class="gimg">
+  <button type="button" id="gimg-btn" aria-label="Images">
+    Images &#9662;
+  </button>
+  <br>
+  <iframe id="gimg-frame" hidden></iframe>
+</div>
+
+<script>
+  (function () {
+    var word = document.getElementById('hw').textContent.trim();
+    var wrLangPair = "esen";     // hardcoded for now, swap for a field-based lookup later
+    var wiktLang = "Spanish";    // hardcoded for now, swap for a field-based lookup later
+
+    var wrLink = document.getElementById('wr-link');
+    wrLink.href = 'https://www.wordreference.com/' + wrLangPair + '/' + encodeURIComponent(word);
+
+    var wiktBtn = document.getElementById('wikt-btn'),
+        wiktFrame = document.getElementById('wikt-frame');
+
+    wiktBtn.addEventListener('click', function () {
+      if (!wiktFrame.src)
+        wiktFrame.src = 'https://en.wiktionary.org/wiki/' + encodeURIComponent(word) + '#' + wiktLang;
+
+      wiktFrame.hidden = !wiktFrame.hidden;
+      wiktBtn.classList.toggle('open', !wiktFrame.hidden);
+    });
+
+		var gimgBtn = document.getElementById('gimg-btn'),
+		gimgFrame = document.getElementById('gimg-frame');
+
+		gimgBtn.addEventListener('click', function () {
+  			if (!gimgFrame.src)
+    			gimgFrame.src = 'https://commons.wikimedia.org/w/index.php?search='
+      			+ encodeURIComponent(word) + '&title=Special:MediaSearch&type=image';
+
+  			gimgFrame.hidden = !gimgFrame.hidden;
+			gimgBtn.classList.toggle('open', !gimgFrame.hidden);
+		});
+  })();
+</script>

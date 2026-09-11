@@ -20,8 +20,23 @@ EXPANDED_PATTERN = re.compile(
     r'<!-- ([\w-]+) start -->\n(.*?)\n<!-- \1 end -->', re.DOTALL
 )
 
-VERSIONED_MODEL_NAMES = ['French vocab']
-VERSIONED_MEDIA_FILENAMES = ['_stylesheet.css', '_word_lookups.js']
+VERSIONED_MODEL_NAMES = [
+    'Adjective - Translation',
+    'French',
+    'French vocab',
+    'German',
+    'Italian',
+    'Noun - Translation with gender',
+    'Numbers - Cardinal',
+    'Swedish',
+    'Verb - Translation',
+    'Verbs conjugation',
+]
+VERSIONED_MEDIA_FILENAMES = [
+    '_stylesheet.css',
+    '_swedish.js',
+    '_word_lookups.js',
+]
 
 
 def export_model(model_name: str):
@@ -135,5 +150,7 @@ def _write_file(path: Path, content: str):
 
 def _read_file(path: Path) -> str:
     content = path.read_text(encoding='utf-8')
-    expanded = _expand_includes(content)
-    return expanded.rstrip('\n')
+    if content.endswith('\n'):
+        content = content[:-1]
+
+    return _expand_includes(content)
