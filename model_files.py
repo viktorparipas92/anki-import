@@ -21,7 +21,7 @@ EXPANDED_PATTERN = re.compile(
 )
 
 VERSIONED_MODEL_NAMES = ['French vocab']
-VERSIONED_MEDIA_FILENAMES = ['_stylesheet.css', '_dictionary_links.js']
+VERSIONED_MEDIA_FILENAMES = ['_stylesheet.css', '_word_lookups.js']
 
 
 def export_model(model_name: str):

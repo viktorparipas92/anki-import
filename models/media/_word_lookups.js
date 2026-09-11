@@ -1,8 +1,9 @@
-/* Shared by every note type that links a word out to a dictionary.
- * The word and the language come from #hw:
+/* Wires up the lookup panels around a headword: the WordReference and image
+ * search links, and the Wiktionary frame. The word and the language come from #hw:
  *   <span id="hw" data-wr-lang-pair="fren" data-wikt-lang="French">chien</span>
- * Every link and panel then says where it points, with {word} and {lang}
- * replaced, so the markup around them is the same in every note type. */
+ * Every link and panel says where it points, with {word} and {lang} replaced,
+ * so the markup is the same in every note type.
+ * Include the snippets a note type needs, then this file once. */
 (function () {
   var headword = document.getElementById('hw');
   if (!headword) return;
