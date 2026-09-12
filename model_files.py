@@ -3,6 +3,7 @@ from pathlib import Path
 
 from anki_actions.model_templates import (
     get_media_directory_path,
+    store_media_file,
     get_model_styling,
     get_model_templates,
     update_model_styling,
@@ -91,11 +92,10 @@ def export_media():
 
 
 def import_media():
-    """Copy the versioned media files into Anki's media folder."""
-    anki_directory = Path(get_media_directory_path())
+    """Write the versioned media files through Anki, so they reach AnkiWeb."""
     for filename in VERSIONED_MEDIA_FILENAMES:
         content = (MEDIA_DIRECTORY / filename).read_text(encoding='utf-8')
-        (anki_directory / filename).write_text(content, encoding='utf-8')
+        store_media_file(filename, content)
 
 
 def read_media_versions(filename: str) -> tuple[str, str]:

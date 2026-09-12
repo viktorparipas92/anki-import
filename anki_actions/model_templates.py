@@ -1,3 +1,5 @@
+import base64
+
 from anki_requests import make_anki_request
 
 
@@ -23,6 +25,12 @@ def update_model_styling(model_name: str, css: str):
     """Overwrite the styling of a note type."""
     model = {'name': model_name, 'css': css}
     make_anki_request('updateModelStyling', params={'model': model})
+
+
+def store_media_file(filename: str, content: str):
+    """Write a media file through Anki, so it registers in the media database."""
+    data = base64.b64encode(content.encode('utf-8')).decode('ascii')
+    make_anki_request('storeMediaFile', params={'filename': filename, 'data': data})
 
 
 def get_media_directory_path() -> str:
