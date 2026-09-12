@@ -1,20 +1,5 @@
+@import url("_stylesheet.css");
+
 .card {
     font-family: arial;
-    font-size: 20px;
-    text-align: center;
-    color: black;
-    background-color: white;
 }
-
-.italian {
-    font-family: geneva, sans-serif, "Droid Sans";
-    font-size: 20px;
-    text-align: center;
-}
-
-.english {
-    font-family: baskerville, "Droid Serif";
-    font-size: 20px;
-    text-align: center;
-}
-

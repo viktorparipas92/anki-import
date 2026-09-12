@@ -1,52 +1,17 @@
 {{FrontSide}}
 
+<!-- include: pronunciation -->
+
 <hr id=answer>
 
 <div class="english">
 	{{English}}
 </div>
 
-<div class="so">
-  <button type="button" id="so-btn" aria-label="Dictionary">
-		SO &#9662;
-	</button>
-  <iframe id="so-frame" hidden></iframe>
-</div>
+<!-- include: svensk_ordbok_frame -->
 
-<script>
-(function () {
-  var btn = document.getElementById('so-btn'),
-      frame = document.getElementById('so-frame'),
-      word = document.getElementById('hw').textContent.trim();
-  btn.addEventListener('click', function () {
-		if (!frame.src)
-			frame.src = 'https://svenska.se/?activeTab=so&q=' + encodeURIComponent(word);
-    
-		frame.hidden = !frame.hidden;
-    	btn.classList.toggle('open', !frame.hidden);
-  });
-})();
-</script>
+<!-- include: wiktionary_frame -->
 
-<div class="wikt">
-	<button type="button" id="wikt-btn" aria-label="Wiktionary">
-		Wiktionary &#9662;
-	</button>
-	<iframe id="wikt-frame" hidden></iframe>
-</div>
+<!-- include: image_search -->
 
-<script>
-	(function () {
-		var btn = document.getElementById('wikt-btn'),
-			frame = document.getElementById('wikt-frame'),
-			word = document.getElementById('hw').textContent.trim();
-		btn.addEventListener('click', function () {
-			if (!frame.src)
-				frame.src = 'https://en.wiktionary.org/wiki/' + encodeURIComponent(word) + '#Swedish';
-
-			frame.hidden = !frame.hidden;
-			btn.classList.toggle('open', !frame.hidden);
-		});
-	})();
-</script>
-
+<script src="_word_lookups.js"></script>

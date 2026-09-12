@@ -6,28 +6,10 @@
 	{{English}}
 </div>
 
-<div class="wikt">
-  <button type="button" id="wikt-btn" aria-label="Wiktionary">
-    Wiktionary &#9662;
-  </button>
-  <iframe id="wikt-frame" hidden></iframe>
-</div>
+<!-- include: wordreference_link -->
 
-<script>
-  (function () {
-    var word = document.getElementById('hw').textContent.trim();
+<!-- include: wiktionary_frame -->
 
-    var wiktLang = "German";
+<!-- include: image_search -->
 
-    var wiktBtn = document.getElementById('wikt-btn'),
-        wiktFrame = document.getElementById('wikt-frame');
-
-    wiktBtn.addEventListener('click', function () {
-      if (!wiktFrame.src)
-        wiktFrame.src = 'https://en.wiktionary.org/wiki/' + encodeURIComponent(word) + '#' + wiktLang;
-
-      wiktFrame.hidden = !wiktFrame.hidden;
-      wiktBtn.classList.toggle('open', !wiktFrame.hidden);
-    });
-  })();
-</script>
+<script src="_word_lookups.js"></script>
