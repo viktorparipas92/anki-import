@@ -28,3 +28,12 @@
 .images a {
     font: 400 13.333px Arial, sans-serif;
 }
+
+/* Crops the header away, as a cross-origin iframe cannot be scrolled. */
+.so iframe {
+    width: 75%;
+    height: 820px;
+    margin-top: -400px;
+    clip-path: inset(400px 0 0 0);
+    border: 0;
+}
