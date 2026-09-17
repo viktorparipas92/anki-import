@@ -15,9 +15,10 @@ from fill_translations import (
 SWEDISH_ONLY_ARGUMENTS = ('--columns', '--language', '--no-prompt')
 TRANSLATION_COLUMN = 'English'
 PRONUNCIATION_COLUMN = 'Pronunciation'
-TRIGGER_COLUMNS = (TRANSLATION_COLUMN, PRONUNCIATION_COLUMN)
+ARTICLE_COLUMN = 'Article'
+TRIGGER_COLUMNS = (TRANSLATION_COLUMN, PRONUNCIATION_COLUMN, ARTICLE_COLUMN)
 WORDREFERENCE_HEADWORD_COLUMNS = (
-    'French', 'Spanish', 'Italian', 'Source', 'Source_pk'
+    'French', 'Spanish', 'Italian', 'Origin', 'Source', 'Source_pk'
 )
 WORD_TYPES_BY_SHEET_NAME = {
     'Adjectives': 'adj',
@@ -27,6 +28,10 @@ WORD_TYPES_BY_SHEET_NAME = {
 SHEET_NAMES_BY_SPREADSHEET = {'ITA': ('Nouns', 'Adjectives', 'Verbs')}
 WORD_TYPE_COLUMN = 'Word type'
 WORD_SUBTYPE_COLUMN = 'Word subtype'
+ARTICLES_BY_GENDER = {
+    wordreference.MASCULINE_NOUN: 'un',
+    wordreference.FEMININE_NOUN: 'une',
+}
 
 
 def choose_entry(
@@ -68,6 +73,14 @@ def get_sheet_names(spreadsheet_key: str, sheet_name: str | None) -> tuple[str, 
         )
 
     return sheet_names
+
+
+def get_language_key(spreadsheet_key: str, sheet_name: str | None) -> str:
+    """Take the language from the spreadsheet, or from the tab when it is not one."""
+    if spreadsheet_key in wordreference.LANGUAGE_CODES:
+        return spreadsheet_key
+
+    return sheet_name or ''
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -159,6 +172,9 @@ def get_wordreference_values(
     return {
         TRANSLATION_COLUMN: translation.english,
         WORD_SUBTYPE_COLUMN: translation.word_subtype,
+        ARTICLE_COLUMN: ARTICLES_BY_GENDER.get(
+            translation.gender, settings.NO_PRONUNCIATION
+        ),
         PRONUNCIATION_COLUMN: pronunciation,
     }
 
@@ -199,7 +215,8 @@ if __name__ == '__main__':
     arguments = parse_arguments()
     _http.use_cache = not arguments.no_cache
     try:
-        if arguments.spreadsheet in wordreference.LANGUAGE_CODES:
+        language_key = get_language_key(arguments.spreadsheet, arguments.sheet)
+        if language_key in wordreference.LANGUAGE_CODES:
             unusable = _get_unusable_arguments(arguments)
             if unusable:
                 raise ValueError(
@@ -215,7 +232,7 @@ if __name__ == '__main__':
                     sheet_name,
                     TRIGGER_COLUMNS,
                     lambda word, row, sheet=sheet_name: get_wordreference_values(
-                        word, row, arguments.spreadsheet, sheet
+                        word, row, language_key, sheet
                     ),
                     WORDREFERENCE_HEADWORD_COLUMNS,
                     dry_run=arguments.dry_run,

@@ -7,7 +7,6 @@ from anki_actions.create_deck import create_deck
 from decks import DECKS
 
 NO_DUPLICATE_FOUND = 'no note of this type has it; check that the deck exists'
-PRONUNCIATION_FIELD = 'Pronunciation'
 
 
 def get_deck_data(filename: str) -> tuple[str, list[str], str, str, str]:
@@ -27,9 +26,10 @@ def get_deck_data(filename: str) -> tuple[str, list[str], str, str, str]:
 
 def extract_fields(row: dict, field_names: list[str]) -> dict:
     """Take the fields the note type has, dropping the sheet's bookkeeping marks."""
-    fields = {name: row[name] or '' for name in field_names}
-    if fields.get(PRONUNCIATION_FIELD) == settings.NO_PRONUNCIATION:
-        fields[PRONUNCIATION_FIELD] = ''
+    fields = {}
+    for name in field_names:
+        value = row[name] or ''
+        fields[name] = '' if value == settings.NO_PRONUNCIATION else value
 
     return fields
 

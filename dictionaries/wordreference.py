@@ -54,6 +54,7 @@ class Translation:
     english: str = ''
     word_subtype: str = ''
     pronunciation: str = ''
+    gender: str = ''
 
 
 @dataclass(frozen=True)
@@ -105,6 +106,7 @@ class Entry:
             english='; '.join(confirmed),
             word_subtype=_get_verb_subtype(category, used_boxes),
             pronunciation=self.pronunciation,
+            gender=_get_gender(used_boxes),
         )
 
 
@@ -333,6 +335,15 @@ def _get_transitivity(part_of_speech: str) -> str:
         return TRANSITIVE
     if any(word == 'vi' for word in words):
         return INTRANSITIVE
+
+    return ''
+
+
+def _get_gender(boxes: list[Box]) -> str:
+    """The gender the used boxes agree on, empty when they do not or it is no noun."""
+    categories = {box.category for box in boxes}
+    if categories == {MASCULINE_NOUN} or categories == {FEMININE_NOUN}:
+        return categories.pop()
 
     return ''
 
