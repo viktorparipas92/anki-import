@@ -101,16 +101,33 @@ python -m scripts.fill_translations ITA Adjectives
 
 ### Add the French book's glossary to the Collection sheet
 Adds words from the index of *Vocabulaire Progressif du Français* that `Collection`
-lacks. The book is a scan, so OCR is needed: `pip install -r requirements-ocr.txt`.
+lacks. The A2-B1 book is a scan, so OCR is needed: `pip install -r requirements-ocr.txt`.
+The B2-C1 book carries its own text layer and needs none.
 
+Two different sets of pages are involved, which is why they are named apart:
+
+| Option | Which pages |
+| --- | --- |
+| `--word-pages 12-15` | the pages of the book a word is listed under, i.e. the chapter you are importing |
+| `--index-pages 187-209` | where the index itself is printed in the PDF; found automatically when left out |
+
+Import one chapter, by the pages it occupies:
 ```bash
-python -m scripts.import_french_glossary <path to the PDF> --from p --dry-run
-python -m scripts.import_french_glossary <path to the PDF> --from p
+python -m scripts.import_french_glossary <path to the PDF> --word-pages 12-15 --index-pages 187-209 --chapter 2 --tag B2-C1 --dry-run
+python -m scripts.import_french_glossary <path to the PDF> --word-pages 12-15 --index-pages 187-209 --chapter 2 --tag B2-C1
 ```
 
+Pin `--index-pages` for the B2-C1 book. Without it the auto-detection also reads the
+SOMMAIRE, which adds chapter headings such as `FORMES ET MATÉRIAUX` as if they were words.
+
+`--tag` defaults to `A2-B1`, so pass `--tag B2-C1` for the advanced book.
+
+`--from-word` narrows alphabetically instead, taking a letter or a whole word:
 ```bash
-python -m scripts.import_french_glossary <path to the PDF> --pages 187-208 --through-page 11 --dry-run
+python -m scripts.import_french_glossary <path to the PDF> --from-word p --dry-run
 ```
+
+`--through-page 11` is the older form of `--word-pages 1-11`, kept working.
 
 ### Import everything, then sync
 `update_all_decks` opens Anki if needed and imports every configured sheet.

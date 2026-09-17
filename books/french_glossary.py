@@ -193,9 +193,9 @@ def sort_key(word: str) -> str:
     return re.sub(r'[^a-z0-9 ]', '', without_accents)
 
 
-def read_french_glossary(pdf_path: str, pages: str = '') -> list[Entry]:
+def read_french_glossary(pdf_path: str, index_pages: str = '') -> list[Entry]:
     """Read the book's glossary, OCR'ing its pages when it carries no text."""
-    page_numbers = _parse_page_range(pages) if pages else None
+    page_numbers = _parse_page_range(index_pages) if index_pages else None
     texts = _read_pages(pdf_path, page_numbers)
     if page_numbers is None:
         texts = [text for text in texts if _count_entries(text)]
@@ -213,15 +213,16 @@ def import_french_glossary(
     spreadsheet_key: str,
     sheet_name: str,
     start_from: str = '',
+    word_pages: str = '',
     through_page: int | None = None,
     chapter: int = DEFAULT_CHAPTER,
     tag: str = DEFAULT_TAG,
-    pages: str = '',
+    index_pages: str = '',
     dry_run: bool = False,
     limit: int | None = None,
 ) -> Report:
     """Add every glossary word the sheet does not have yet, alphabetically."""
-    entries = read_french_glossary(pdf_path, pages)
+    entries = read_french_glossary(pdf_path, index_pages)
     print(f'{len(entries)} entries in the glossary')
     if not entries:
         raise ValueError(
@@ -234,6 +235,15 @@ def import_french_glossary(
         cutoff = sort_key(start_from)
         considered = [entry for entry in considered if sort_key(entry.word) >= cutoff]
         print(f'{len(considered)} of them at or after "{start_from}"')
+
+    if word_pages:
+        wanted_page_numbers = set(_parse_page_range(word_pages))
+        considered = [
+            entry
+            for entry in considered
+            if wanted_page_numbers.intersection(entry.page_numbers)
+        ]
+        print(f'{len(considered)} of them printed on page {word_pages}')
 
     if through_page is not None:
         considered = [
