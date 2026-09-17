@@ -22,6 +22,8 @@ SPREADSHEETS = {
     'SWE': '1ZMt_-XL3wQn52VyOavFGkjWkaqKBiHA-vAxWN4qv5fE',
 }
 
+NO_PRONUNCIATION = '-'
+
 USER_AGENT = 'anki-import/1.0 (personal Anki deck builder)'
 SVENSK_ORDBOK_API_URL = 'https://svenska.se/api'
 WIKTIONARY_API_URL = 'https://en.wiktionary.org/w/api.php'

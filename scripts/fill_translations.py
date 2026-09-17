@@ -155,10 +155,11 @@ def get_wordreference_values(
     translation = wordreference.translate(
         word, language_key, word_type, word_subtype
     )
+    pronunciation = translation.pronunciation or settings.NO_PRONUNCIATION
     return {
         TRANSLATION_COLUMN: translation.english,
         WORD_SUBTYPE_COLUMN: translation.word_subtype,
-        PRONUNCIATION_COLUMN: translation.pronunciation,
+        PRONUNCIATION_COLUMN: pronunciation,
     }
 
 
