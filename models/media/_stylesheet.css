@@ -25,7 +25,8 @@
 }
 
 .wr a,
-.images a {
+.images a,
+.dictcc a {
     font: 400 13.333px Arial, sans-serif;
 }
 
