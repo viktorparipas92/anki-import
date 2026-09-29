@@ -28,9 +28,9 @@ WORD_TYPES_BY_SHEET_NAME = {
 SHEET_NAMES_BY_SPREADSHEET = {'ITA': ('Nouns', 'Adjectives', 'Verbs')}
 WORD_TYPE_COLUMN = 'Word type'
 WORD_SUBTYPE_COLUMN = 'Word subtype'
-ARTICLES_BY_GENDER = {
-    wordreference.MASCULINE_NOUN: 'un',
-    wordreference.FEMININE_NOUN: 'une',
+ARTICLES_BY_SUBTYPE = {
+    wordreference.MASCULINE_SUBTYPE: 'un',
+    wordreference.FEMININE_SUBTYPE: 'une',
 }
 
 
@@ -169,14 +169,24 @@ def get_wordreference_values(
         word, language_key, word_type, word_subtype
     )
     pronunciation = translation.pronunciation or settings.NO_PRONUNCIATION
+    article = _get_article(translation)
     return {
         TRANSLATION_COLUMN: translation.english,
+        WORD_TYPE_COLUMN: translation.word_type,
         WORD_SUBTYPE_COLUMN: translation.word_subtype,
-        ARTICLE_COLUMN: ARTICLES_BY_GENDER.get(
-            translation.gender, settings.NO_PRONUNCIATION
-        ),
+        ARTICLE_COLUMN: article,
         PRONUNCIATION_COLUMN: pronunciation,
     }
+
+
+def _get_article(translation: wordreference.Translation) -> str:
+    """The indefinite article a noun takes, marked when the word takes none."""
+    if translation.word_type != wordreference.NOUN:
+        return settings.NO_PRONUNCIATION
+
+    return ARTICLES_BY_SUBTYPE.get(
+        translation.word_subtype, settings.NO_PRONUNCIATION
+    )
 
 
 def _get_word_type(row: dict[str, str], sheet_name: str) -> str:

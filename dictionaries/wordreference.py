@@ -24,6 +24,10 @@ MAIN_TRANSLATION_ARROW = '⇒'
 FEMININE_NOUN = 'nf'
 MASCULINE_NOUN = 'nm'
 NOUN_OF_EITHER_GENDER = 'n'
+NOUN = 'n'
+MASCULINE_SUBTYPE = 'm'
+FEMININE_SUBTYPE = 'f'
+EITHER_GENDER_SUBTYPE = 'mf'
 ADJECTIVE = 'adj'
 ADJECTIVE_MARKERS = ('adj', 'agg')
 REFLEXIVE_MARKERS = ('pron', 'rif')
@@ -52,9 +56,9 @@ class Translation:
     """What WordReference has to say about one row of the sheet."""
 
     english: str = ''
+    word_type: str = ''
     word_subtype: str = ''
     pronunciation: str = ''
-    gender: str = ''
 
 
 @dataclass(frozen=True)
@@ -102,11 +106,12 @@ class Entry:
                 confirmed.append(', '.join(words))
                 used_boxes.append(box)
 
+        word_type = _get_word_type(used_boxes)
         return Translation(
             english='; '.join(confirmed),
-            word_subtype=_get_verb_subtype(category, used_boxes),
+            word_type=word_type,
+            word_subtype=_get_subtype(word_type, category, used_boxes),
             pronunciation=self.pronunciation,
-            gender=_get_gender(used_boxes),
         )
 
 
@@ -339,13 +344,38 @@ def _get_transitivity(part_of_speech: str) -> str:
     return ''
 
 
-def _get_gender(boxes: list[Box]) -> str:
-    """The gender the used boxes agree on, empty when they do not or it is no noun."""
+def _get_word_type(boxes: list[Box]) -> str:
+    """The part of speech the used boxes agree on, as the sheet spells it."""
     categories = {box.category for box in boxes}
-    if categories == {MASCULINE_NOUN} or categories == {FEMININE_NOUN}:
-        return categories.pop()
+    if not categories:
+        return ''
+    if categories <= NOUN_CATEGORIES:
+        return NOUN
+    if categories <= VERB_CATEGORIES:
+        return VERB
+    if categories == {ADJECTIVE}:
+        return ADJECTIVE
 
     return ''
+
+
+def _get_subtype(word_type: str, category: str, boxes: list[Box]) -> str:
+    """A noun's gender or a verb's transitivity, as the sheet spells it."""
+    if word_type == NOUN:
+        return _get_gender(boxes)
+
+    return _get_verb_subtype(category, boxes)
+
+
+def _get_gender(boxes: list[Box]) -> str:
+    """The gender the used noun boxes agree on, "mf" when they do not."""
+    categories = {box.category for box in boxes}
+    if categories == {MASCULINE_NOUN}:
+        return MASCULINE_SUBTYPE
+    if categories == {FEMININE_NOUN}:
+        return FEMININE_SUBTYPE
+
+    return EITHER_GENDER_SUBTYPE
 
 
 def _get_verb_subtype(category: str, boxes: list[Box]) -> str:
