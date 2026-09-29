@@ -16,7 +16,14 @@ SWEDISH_ONLY_ARGUMENTS = ('--columns', '--language', '--no-prompt')
 TRANSLATION_COLUMN = 'English'
 PRONUNCIATION_COLUMN = 'Pronunciation'
 ARTICLE_COLUMN = 'Article'
-TRIGGER_COLUMNS = (TRANSLATION_COLUMN, PRONUNCIATION_COLUMN, ARTICLE_COLUMN)
+DEFINITE_ARTICLE_COLUMN = 'Definite article'
+INDEFINITE_ARTICLE_COLUMN = 'Indefinite article'
+TRIGGER_COLUMNS = (
+    TRANSLATION_COLUMN,
+    PRONUNCIATION_COLUMN,
+    ARTICLE_COLUMN,
+    DEFINITE_ARTICLE_COLUMN,
+)
 WORDREFERENCE_HEADWORD_COLUMNS = (
     'French', 'Spanish', 'Italian', 'Origin', 'Source', 'Source_pk'
 )
@@ -31,6 +38,14 @@ WORD_SUBTYPE_COLUMN = 'Word subtype'
 ARTICLES_BY_SUBTYPE = {
     wordreference.MASCULINE_SUBTYPE: 'un',
     wordreference.FEMININE_SUBTYPE: 'une',
+}
+ITALIAN = 'ITA'
+ITALIAN_VOWELS = 'aeiou'
+ITALIAN_ELIDED_ARTICLE = "l'"
+ITALIAN_LO_PREFIXES = ('gn', 'pn', 'ps', 'x', 'y', 'z')
+ITALIAN_INDEFINITE_ARTICLES = {
+    wordreference.MASCULINE_SUBTYPE: 'un',
+    wordreference.FEMININE_SUBTYPE: "un'",
 }
 
 
@@ -170,13 +185,52 @@ def get_wordreference_values(
     )
     pronunciation = translation.pronunciation or settings.NO_PRONUNCIATION
     article = _get_article(translation)
-    return {
+    values = {
         TRANSLATION_COLUMN: translation.english,
         WORD_TYPE_COLUMN: translation.word_type,
         WORD_SUBTYPE_COLUMN: translation.word_subtype,
         ARTICLE_COLUMN: article,
         PRONUNCIATION_COLUMN: pronunciation,
     }
+    if language_key == ITALIAN:
+        values.update(get_italian_articles(word, translation.word_subtype))
+
+    return values
+
+
+def get_italian_articles(word: str, gender: str) -> dict[str, str]:
+    """A noun's definite article, and its indefinite one where that hides the gender."""
+    definite_article = get_italian_definite_article(word, gender)
+    if not definite_article:
+        return {}
+
+    articles = {DEFINITE_ARTICLE_COLUMN: definite_article}
+    if definite_article == ITALIAN_ELIDED_ARTICLE:
+        articles[INDEFINITE_ARTICLE_COLUMN] = ITALIAN_INDEFINITE_ARTICLES[gender]
+
+    return articles
+
+
+def get_italian_definite_article(word: str, gender: str) -> str:
+    """The article the noun takes, empty when the gender or the spelling is unclear."""
+    headword = word.strip().casefold()
+    if gender not in ITALIAN_INDEFINITE_ARTICLES or len(headword) < 2:
+        return ''
+
+    first, second = headword[0], headword[1]
+    is_semiconsonant = first == 'i' and second in ITALIAN_VOWELS
+    if first in ITALIAN_VOWELS and not is_semiconsonant:
+        return ITALIAN_ELIDED_ARTICLE
+
+    if gender == wordreference.FEMININE_SUBTYPE:
+        return 'la'
+
+    takes_lo = (
+        is_semiconsonant
+        or headword.startswith(ITALIAN_LO_PREFIXES)
+        or first == 's' and second not in ITALIAN_VOWELS
+    )
+    return 'lo' if takes_lo else 'il'
 
 
 def _get_article(translation: wordreference.Translation) -> str:
