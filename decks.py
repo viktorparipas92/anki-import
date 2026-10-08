@@ -99,6 +99,11 @@ DECKS = {
             'unique_field': 'Key',
             'model_name': 'Verbs conjugation',
         },
+        'Verbs - Future.csv': {
+            'field_names': VERB_CONJUGATION_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Verbs conjugation',
+        },
         'Verbs - Past participle.csv': {
             'field_names': VERB_PAST_PARTICIPLE_FIELDS,
             'unique_field': 'Key',
@@ -137,6 +142,11 @@ DECKS = {
             'model_name': 'Verbs conjugation',
         },
         'Verbs - Imperfect.csv': {
+            'field_names': VERB_CONJUGATION_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Verbs conjugation',
+        },
+        'Verbs - Future.csv': {
             'field_names': VERB_CONJUGATION_FIELDS,
             'unique_field': 'Key',
             'model_name': 'Verbs conjugation',
