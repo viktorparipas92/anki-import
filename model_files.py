@@ -2,7 +2,10 @@ import re
 from pathlib import Path
 
 from anki_actions.model_templates import (
+    create_model,
     get_media_directory_path,
+    get_model_field_names,
+    get_model_names,
     store_media_file,
     get_model_styling,
     get_model_templates,
@@ -14,6 +17,7 @@ MODELS_DIRECTORY = Path('models')
 MEDIA_DIRECTORY = MODELS_DIRECTORY / 'media'
 SNIPPETS_DIRECTORY = MODELS_DIRECTORY / 'snippets'
 STYLING_FILENAME = 'styling.css'
+FIELDS_FILENAME = 'fields.txt'
 FILENAMES_BY_SIDE = {'Front': 'front.html', 'Back': 'back.html'}
 
 INCLUDE_PATTERN = re.compile(r'<!-- include: ([\w-]+) -->')
@@ -23,6 +27,7 @@ EXPANDED_PATTERN = re.compile(
 
 VERSIONED_MODEL_NAMES = [
     'Adjective - Translation',
+    'Adverb - Translation',
     'French',
     'French vocab',
     'German',
@@ -44,6 +49,10 @@ def export_model(model_name: str):
     """Write the templates and styling of a note type into the models directory."""
     model_directory = MODELS_DIRECTORY / model_name
     model_directory.mkdir(parents=True, exist_ok=True)
+
+    field_names = get_model_field_names(model_name)
+    joined_field_names = '\n'.join(field_names)
+    (model_directory / FIELDS_FILENAME).write_text(joined_field_names + '\n', encoding='utf-8')
 
     styling = get_model_styling(model_name)
     _write_file(model_directory / STYLING_FILENAME, styling)
@@ -75,9 +84,24 @@ def read_model(model_name: str) -> tuple[str, dict[str, dict[str, str]]]:
     return styling, templates_by_card_name
 
 
+def read_model_field_names(model_name: str) -> list[str]:
+    """Read the field names of a note type from the models directory."""
+    path = MODELS_DIRECTORY / model_name / FIELDS_FILENAME
+    content = path.read_text(encoding='utf-8')
+    return content.splitlines()
+
+
 def import_model(model_name: str):
-    """Overwrite a note type in Anki with the files in the models directory."""
+    """Overwrite a note type in Anki with the files in the models directory.
+
+    A note type Anki does not have yet is created with the fields in fields.txt.
+    """
     styling, templates_by_card_name = read_model(model_name)
+    if model_name not in get_model_names():
+        field_names = read_model_field_names(model_name)
+        create_model(model_name, field_names, styling, templates_by_card_name)
+        return
+
     update_model_styling(model_name, styling)
     update_model_templates(model_name, templates_by_card_name)
 

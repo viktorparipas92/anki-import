@@ -2,9 +2,14 @@ import argparse
 import difflib
 import sys
 
-from anki_actions.model_templates import get_model_styling, get_model_templates
+from anki_actions.model_templates import (
+    get_model_names,
+    get_model_styling,
+    get_model_templates,
+)
 from anki_requests import wait_for_ankiconnect
 from model_files import (
+    FIELDS_FILENAME,
     FILENAMES_BY_SIDE,
     MODELS_DIRECTORY,
     VERSIONED_MEDIA_FILENAMES,
@@ -13,6 +18,7 @@ from model_files import (
     import_model,
     read_media_versions,
     read_model,
+    read_model_field_names,
 )
 
 EMPTY_CONTENT_BY_SIDE = {'Front': '', 'Back': ''}
@@ -52,13 +58,26 @@ def get_media_versions() -> list[tuple[str, str, str]]:
     return versions
 
 
-def get_model_versions(model_name: str) -> list[tuple[str, str, str]]:
-    """Read each file of a note type as it is in Anki and in the repository."""
-    styling, templates_by_card_name = read_model(model_name)
-    anki_styling = get_model_styling(model_name)
-    anki_templates_by_card_name = get_model_templates(model_name)
+def get_model_versions(
+    model_name: str, anki_model_names: list[str]
+) -> list[tuple[str, str, str]]:
+    """Read each file of a note type as it is in Anki and in the repository.
 
-    versions = [(f'{model_name}/styling.css', anki_styling, styling)]
+    A note type Anki does not have yet counts as empty there, fields included.
+    """
+    styling, templates_by_card_name = read_model(model_name)
+    if model_name in anki_model_names:
+        versions = []
+        anki_styling = get_model_styling(model_name)
+        anki_templates_by_card_name = get_model_templates(model_name)
+    else:
+        field_names = read_model_field_names(model_name)
+        joined_field_names = '\n'.join(field_names)
+        versions = [(f'{model_name}/{FIELDS_FILENAME}', '', joined_field_names)]
+        anki_styling = ''
+        anki_templates_by_card_name = {}
+
+    versions.append((f'{model_name}/styling.css', anki_styling, styling))
     for card_name, content_by_side in templates_by_card_name.items():
         anki_content_by_side = anki_templates_by_card_name.get(
             card_name, EMPTY_CONTENT_BY_SIDE
@@ -87,8 +106,9 @@ def get_difference(label: str, anki_content: str, repository_content: str) -> st
 def get_differences(model_names: list[str]) -> list[str]:
     """Describe everything importing would change in Anki."""
     versions = get_media_versions()
+    anki_model_names = get_model_names()
     for model_name in model_names:
-        versions += get_model_versions(model_name)
+        versions += get_model_versions(model_name, anki_model_names)
 
     differences = []
     for label, anki_content, repository_content in versions:
