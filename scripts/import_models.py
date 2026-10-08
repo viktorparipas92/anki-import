@@ -3,6 +3,7 @@ import difflib
 import sys
 
 from anki_actions.model_templates import (
+    get_model_field_names,
     get_model_names,
     get_model_styling,
     get_model_templates,
@@ -14,6 +15,7 @@ from model_files import (
     MODELS_DIRECTORY,
     VERSIONED_MEDIA_FILENAMES,
     VERSIONED_MODEL_NAMES,
+    has_model_field_names,
     import_media,
     import_model,
     read_media_versions,
@@ -67,15 +69,21 @@ def get_model_versions(
     """
     styling, templates_by_card_name = read_model(model_name)
     if model_name in anki_model_names:
-        versions = []
+        anki_field_names = get_model_field_names(model_name)
         anki_styling = get_model_styling(model_name)
         anki_templates_by_card_name = get_model_templates(model_name)
     else:
-        field_names = read_model_field_names(model_name)
-        joined_field_names = '\n'.join(field_names)
-        versions = [(f'{model_name}/{FIELDS_FILENAME}', '', joined_field_names)]
+        anki_field_names = []
         anki_styling = ''
         anki_templates_by_card_name = {}
+
+    versions = []
+    if has_model_field_names(model_name):
+        field_names = read_model_field_names(model_name)
+        joined_field_names = '\n'.join(field_names)
+        joined_anki_field_names = '\n'.join(anki_field_names)
+        label = f'{model_name}/{FIELDS_FILENAME}'
+        versions.append((label, joined_anki_field_names, joined_field_names))
 
     versions.append((f'{model_name}/styling.css', anki_styling, styling))
     for card_name, content_by_side in templates_by_card_name.items():

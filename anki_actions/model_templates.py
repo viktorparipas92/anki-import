@@ -47,6 +47,12 @@ def create_model(
     make_anki_request('createModel', params=params)
 
 
+def add_model_field(model_name: str, field_name: str, index: int):
+    """Add an empty field to a note type, at the given position."""
+    params = {'modelName': model_name, 'fieldName': field_name, 'index': index}
+    make_anki_request('modelFieldAdd', params=params)
+
+
 def update_model_templates(model_name: str, templates_by_card_name: dict):
     """Overwrite the card templates of a note type."""
     model = {'name': model_name, 'templates': templates_by_card_name}

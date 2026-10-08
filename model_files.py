@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 
 from anki_actions.model_templates import (
+    add_model_field,
     create_model,
     get_media_directory_path,
     get_model_field_names,
@@ -84,6 +85,12 @@ def read_model(model_name: str) -> tuple[str, dict[str, dict[str, str]]]:
     return styling, templates_by_card_name
 
 
+def has_model_field_names(model_name: str) -> bool:
+    """Tell whether the models directory lists the fields of a note type."""
+    path = MODELS_DIRECTORY / model_name / FIELDS_FILENAME
+    return path.exists()
+
+
 def read_model_field_names(model_name: str) -> list[str]:
     """Read the field names of a note type from the models directory."""
     path = MODELS_DIRECTORY / model_name / FIELDS_FILENAME
@@ -94,13 +101,17 @@ def read_model_field_names(model_name: str) -> list[str]:
 def import_model(model_name: str):
     """Overwrite a note type in Anki with the files in the models directory.
 
-    A note type Anki does not have yet is created with the fields in fields.txt.
+    A note type Anki does not have yet is created with the fields in fields.txt, and
+    an existing one gets the fields it lacks. Fields are never removed or renamed.
     """
     styling, templates_by_card_name = read_model(model_name)
     if model_name not in get_model_names():
         field_names = read_model_field_names(model_name)
         create_model(model_name, field_names, styling, templates_by_card_name)
         return
+
+    if has_model_field_names(model_name):
+        _add_missing_fields(model_name)
 
     update_model_styling(model_name, styling)
     update_model_templates(model_name, templates_by_card_name)
@@ -128,6 +139,14 @@ def read_media_versions(filename: str) -> tuple[str, str]:
     anki_content = _read_media_file(anki_directory / filename)
     repository_content = (MEDIA_DIRECTORY / filename).read_text(encoding='utf-8')
     return anki_content, repository_content
+
+
+def _add_missing_fields(model_name: str):
+    field_names = read_model_field_names(model_name)
+    anki_field_names = get_model_field_names(model_name)
+    for index, field_name in enumerate(field_names):
+        if field_name not in anki_field_names:
+            add_model_field(model_name, field_name, index)
 
 
 def _read_media_file(path: Path) -> str:

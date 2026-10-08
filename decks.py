@@ -17,7 +17,7 @@ FRENCH_VOCAB_FIELDS = [
 ]
 
 ADJECTIVE_TRANSLATION_FIELDS = ['Key', 'Source', 'English', 'Etymology', 'Pronunciation']
-ADVERB_TRANSLATION_FIELDS = ['Key', 'Source', 'English']
+ADVERB_TRANSLATION_FIELDS = ['Key', 'Source', 'English', 'Pronunciation']
 NOUN_TRANSLATION_FIELDS = ['Key', 'Source_pk', 'Article_pk', 'English', 'Pronunciation']
 VERB_TRANSLATION_FIELDS = ['Key', 'Source', 'English', 'Pronunciation']
 VERB_CONJUGATION_FIELDS = ['Key', 'Source', 'English', 'E/1', 'E/2', 'E/3', 'T/1', 'T/2', 'T/3']
@@ -99,6 +99,11 @@ DECKS = {
             'field_names': ADJECTIVE_TRANSLATION_FIELDS,
             'unique_field': 'Key',
             'model_name': 'Adjective - Translation',
+        },
+        'Adverbs - Translation.csv': {
+            'field_names': ADVERB_TRANSLATION_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Adverb - Translation',
         },
         'Nouns - Translation.csv': {
             'field_names': NOUN_TRANSLATION_FIELDS,
