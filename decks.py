@@ -20,6 +20,7 @@ ADJECTIVE_TRANSLATION_FIELDS = ['Key', 'Source', 'English', 'Etymology', 'Pronun
 ADVERB_TRANSLATION_FIELDS = ['Key', 'Source', 'English', 'Pronunciation']
 NOUN_TRANSLATION_FIELDS = ['Key', 'Source_pk', 'Article_pk', 'English', 'Pronunciation']
 VERB_TRANSLATION_FIELDS = ['Key', 'Source', 'English', 'Pronunciation']
+VERB_PAST_PARTICIPLE_FIELDS = ['Key', 'Source', 'English', 'Past participle']
 VERB_CONJUGATION_FIELDS = ['Key', 'Source', 'English', 'E/1', 'E/2', 'E/3', 'T/1', 'T/2', 'T/3']
 NOUN_PLURAL_FIELDS = ['Article_pk', 'Source_pk', 'English', 'Plural article', 'Plural']
 NUMBER_CARDINAL_FIELDS = ['Key', 'Source', 'English', 'Number']
@@ -93,6 +94,11 @@ DECKS = {
             'unique_field': 'Key',
             'model_name': 'Verbs conjugation',
         },
+        'Verbs - Past participle.csv': {
+            'field_names': VERB_PAST_PARTICIPLE_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Verb - Past participle',
+        },
     },
     'Italian grammar & vocab': {
         'Adjectives - Translation.csv': {
@@ -124,6 +130,11 @@ DECKS = {
             'field_names': VERB_CONJUGATION_FIELDS,
             'unique_field': 'Key',
             'model_name': 'Verbs conjugation',
+        },
+        'Verbs - Past participle.csv': {
+            'field_names': VERB_PAST_PARTICIPLE_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Verb - Past participle',
         },
         'Numbers - Cardinal.csv': {
             'field_names': NUMBER_CARDINAL_FIELDS,

@@ -5,6 +5,9 @@
  * so the markup is the same in every note type.
  * A note type shared by several languages says data-key="{{text:Key}}" instead,
  * and the language follows from the [IT] or (ES) marker in the key.
+ * A Wiktionary button with data-section="Conjugation" opens that section of the
+ * language. Wiktionary numbers repeated headings across languages (Conjugation_6),
+ * so the anchor is looked up in its API, falling back to the language's section.
  * Include the snippets a note type needs, then this file once. */
 (function () {
   var LANGUAGES_BY_CODE = {
@@ -56,11 +59,46 @@
       return;
     }
 
+    var section = button.getAttribute('data-section');
+    var isRequested = false;
     button.addEventListener('click', function () {
-      if (!frame.src) frame.src = url;
+      if (!isRequested) {
+        isRequested = true;
+        if (section) openSection(frame, url, section);
+        else frame.src = url;
+      }
 
       frame.hidden = !frame.hidden;
       button.classList.toggle('open', !frame.hidden);
     });
   });
+
+  function openSection(frame, url, section) {
+    findWiktionaryAnchor(section, function (anchor) {
+      var page = url.split('#')[0];
+      frame.src = anchor ? page + '#' + anchor : url;
+    });
+  }
+
+  function findWiktionaryAnchor(section, callback) {
+    var api = 'https://en.wiktionary.org/w/api.php?action=parse&prop=sections' +
+      '&format=json&origin=*&page=' + word;
+    fetch(api)
+      .then(function (response) { return response.json(); })
+      .then(function (data) {
+        callback(pickAnchor(data.parse.sections, section));
+      })
+      .catch(function () { callback(''); });
+  }
+
+  function pickAnchor(sections, section) {
+    var language = '';
+    for (var index = 0; index < sections.length; index++) {
+      var entry = sections[index];
+      if (entry.toclevel === 1) language = entry.line;
+      else if (language === languages.wiktionary && entry.line === section) return entry.anchor;
+    }
+
+    return '';
+  }
 })();
