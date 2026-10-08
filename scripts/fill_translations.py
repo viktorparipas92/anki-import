@@ -32,7 +32,10 @@ WORD_TYPES_BY_SHEET_NAME = {
     'Nouns': 'n',
     'Verbs': 'v',
 }
-SHEET_NAMES_BY_SPREADSHEET = {'ITA': ('Nouns', 'Adjectives', 'Verbs')}
+SHEET_NAMES_BY_SPREADSHEET = {
+    'ESP': ('Nouns', 'Adjectives', 'Verbs', 'Adverbs'),
+    'ITA': ('Nouns', 'Adjectives', 'Verbs', 'Adverbs'),
+}
 WORD_TYPE_COLUMN = 'Word type'
 WORD_SUBTYPE_COLUMN = 'Word subtype'
 ARTICLES_BY_SUBTYPE = {
