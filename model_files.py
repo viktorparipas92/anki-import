@@ -36,6 +36,7 @@ VERSIONED_MODEL_NAMES = [
     'Noun - Translation with gender',
     'Numbers - Cardinal',
     'Swedish',
+    'Verb - Conjugated form',
     'Verb - Past participle',
     'Verb - Translation',
     'Verbs conjugation',
