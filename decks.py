@@ -22,6 +22,7 @@ NOUN_TRANSLATION_FIELDS = ['Key', 'Source_pk', 'Article_pk', 'English', 'Pronunc
 VERB_TRANSLATION_FIELDS = ['Key', 'Source', 'English', 'Pronunciation']
 VERB_PAST_PARTICIPLE_FIELDS = ['Key', 'Source', 'English', 'Past participle']
 CONJUGATED_FORM_FIELDS = ['Key', 'Source', 'Infinitive', 'Tense', 'Person', 'English', 'Same form']
+IMPERATIVE_FIELDS = ['Key', 'Source', 'English', 'E/2', 'E/3', 'T/1', 'T/2', 'T/3']
 VERB_CONJUGATION_FIELDS = ['Key', 'Source', 'English', 'E/1', 'E/2', 'E/3', 'T/1', 'T/2', 'T/3']
 NOUN_PLURAL_FIELDS = ['Article_pk', 'Source_pk', 'English', 'Plural article', 'Plural']
 NUMBER_CARDINAL_FIELDS = ['Key', 'Source', 'English', 'Number']
@@ -120,6 +121,16 @@ DECKS = {
             'unique_field': 'Key',
             'model_name': 'Verbs conjugation',
         },
+        'Verbs - Preterite.csv': {
+            'field_names': VERB_CONJUGATION_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Verbs conjugation',
+        },
+        'Verbs - Imperative.csv': {
+            'field_names': IMPERATIVE_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Verbs conjugation',
+        },
         'Verbs - All forms.csv': {
             'field_names': CONJUGATED_FORM_FIELDS,
             'unique_field': 'Key',
@@ -184,6 +195,16 @@ DECKS = {
         },
         'Verbs - Imperfect subjunctive.csv': {
             'field_names': VERB_CONJUGATION_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Verbs conjugation',
+        },
+        'Verbs - Preterite.csv': {
+            'field_names': VERB_CONJUGATION_FIELDS,
+            'unique_field': 'Key',
+            'model_name': 'Verbs conjugation',
+        },
+        'Verbs - Imperative.csv': {
+            'field_names': IMPERATIVE_FIELDS,
             'unique_field': 'Key',
             'model_name': 'Verbs conjugation',
         },
