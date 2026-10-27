@@ -1,6 +1,6 @@
 beautifulsoup4==4.14.2
 cachetools==6.2.2
-certifi==2025.11.12
+certifi==2026.10.18
 charset-normalizer==3.4.4
 google-api-core==2.28.1
 google-api-python-client==2.187.0
